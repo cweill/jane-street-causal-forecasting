@@ -52,7 +52,7 @@ for filename in ("pyproject.toml", "uv.lock"):
     volumes={"/pilot": volume},
     include_source=False,
 )
-def run_gpu(input_digest: str, run_id: str):
+def run_gpu(input_digest: str, run_id: str, method: str):
     from scripts.real_data_pilot import run_pilot
     from src.artifacts import sha256_file
 
@@ -61,7 +61,7 @@ def run_gpu(input_digest: str, run_id: str):
         raise ValueError("uploaded pilot input checksum mismatch")
     output = Path("/pilot/runs") / run_id
     try:
-        result = run_pilot(data, output, device="cuda")
+        result = run_pilot(data, output, device="cuda", method=method)
         archive = output.with_suffix(".tar.gz")
         with tarfile.open(archive, "w:gz") as handle:
             handle.add(output, arcname=run_id)
@@ -76,7 +76,9 @@ def run_gpu(input_digest: str, run_id: str):
 
 
 @app.local_entrypoint()
-def main(data: str):
+def main(data: str, method: str = "grigoreva"):
+    if method not in {"grigoreva", "patrick"}:
+        raise ValueError("unknown pilot method")
     data_path = Path(data).resolve()
     digest = hashlib.sha256(data_path.read_bytes()).hexdigest()
     manifest = json.loads(data_path.with_suffix(".json").read_text())
@@ -87,7 +89,7 @@ def main(data: str):
     # A duplicate content-addressed input may already exist after an interrupted run.
     with volume.batch_upload(force=True) as upload:
         upload.put_file(data_path, f"/inputs/{digest}.parquet")
-    result = run_gpu.remote(digest, run_id)
+    result = run_gpu.remote(digest, run_id, method)
     local = ROOT / "artifacts/modal-pilot"
     local.mkdir(parents=True, exist_ok=True)
     archive_path = local / f"{run_id}.tar.gz"

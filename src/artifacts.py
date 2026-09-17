@@ -42,6 +42,24 @@ def save_predictor(path, models, features, scaler, online, seeds):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=False)
     torch.save([m.state_dict() for m in models], path / "weights.pt")
+    from src.data.patrick_features import PatrickFeatures
+
+    if isinstance(features, PatrickFeatures):
+        write_json(
+            path / "metadata.json",
+            {
+                "format_version": 2,
+                "method": "patrick",
+                "models": [asdict(m.config) for m in models],
+                "features": asdict(features.config),
+                "feature_state": features.state_dict(),
+                "online": asdict(online),
+                "seeds": list(seeds),
+                "weights_sha256": sha256_file(path / "weights.pt"),
+                "note": "Initial replay checkpoint; online optimizer/cache are not resumed.",
+            },
+        )
+        return
     metadata = {
         "format_version": 1,
         "models": [asdict(m.config) for m in models],
@@ -60,10 +78,29 @@ def load_predictor(path, device="cpu", *, reset_clock=False):
     path = Path(path)
     metadata = json.loads((path / "metadata.json").read_text())
     if (
-        metadata["format_version"] != 1
+        metadata["format_version"] not in {1, 2}
         or sha256_file(path / "weights.pt") != metadata["weights_sha256"]
     ):
         raise ValueError("unsupported or corrupt model artifact")
+    if metadata["format_version"] == 2:
+        from src.data.patrick_features import PatrickFeatureConfig, PatrickFeatures
+        from src.models.patrick_yam import PatrickModelConfig, PatrickYam
+        from src.training.patrick import PatrickOnlineConfig, PatrickPredictor
+
+        features = PatrickFeatures(
+            PatrickFeatureConfig(**metadata["features"]),
+            metadata["feature_state"]["scaler"]["training_dates"],
+        )
+        features.load_state_dict(metadata["feature_state"])
+        states = torch.load(path / "weights.pt", map_location=device, weights_only=True)
+        models = []
+        for config, state in zip(metadata["models"], states, strict=True):
+            model = PatrickYam(PatrickModelConfig(**config), features.vocab_sizes).to(device)
+            model.load_state_dict(state)
+            models.append(model.eval())
+        return PatrickPredictor(
+            models, features, PatrickOnlineConfig(**metadata["online"]), metadata["seeds"]
+        )
     features = FeaturePipeline(FeatureConfig(**metadata["features"]))
     if features.names != metadata["feature_names"]:
         raise ValueError("feature schema changed since artifact creation")

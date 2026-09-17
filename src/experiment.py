@@ -11,7 +11,7 @@ from src.artifacts import load_predictor, save_predictor, write_json
 from src.cv import temporal_folds
 from src.data.api_simulator import APISimulator
 from src.safety import safety_gate
-from src.training.offline import prepare_training, train_model
+from src.training.dispatch import fit, prepare
 
 
 class PredictionWriter:
@@ -86,20 +86,12 @@ def _run_verified(source, config, output, gate):
             f"validate {fold.validation_dates[0]}..{fold.validation_dates[-1]}",
             flush=True,
         )
-        prepared = prepare_training(
-            source, fold.train_dates, config.features, directory / "training_cache"
-        )
+        prepared = prepare(config, source, fold.train_dates, directory / "training_cache")
         models, seeds, histories = [], [], []
         for model_config, seed in config.members:
-            print(f"  fitting {model_config.architecture}, seed {seed}", flush=True)
-            model, history = train_model(
-                prepared,
-                model_config,
-                seed=seed,
-                epochs=config.training.epochs,
-                learning_rate=config.training.learning_rate,
-                device=config.training.device,
-            )
+            label = getattr(model_config, "architecture", "patrick")
+            print(f"  fitting {label}, seed {seed}", flush=True)
+            model, history = fit(config, prepared, model_config, seed)
             models.append(model)
             seeds.append(seed)
             histories.append({"model": asdict(model_config), "seed": seed, "history": history})

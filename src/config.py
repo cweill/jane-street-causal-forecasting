@@ -82,6 +82,10 @@ class ExperimentConfig:
 
 
 def from_dict(raw):
+    if raw.get("method") == "patrick":
+        from src.patrick_config import from_dict as patrick_from_dict
+
+        return patrick_from_dict(raw)
     raw = dict(raw)
     types = {
         "features": FeatureConfig,

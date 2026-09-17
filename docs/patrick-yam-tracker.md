@@ -1,11 +1,13 @@
 # Patrick Yam reproduction tracker
 
-Updated: 2026-09-17. Status: source collection; second-place model not implemented.
+Updated: 2026-09-17. Status: reconstruction implemented; local causal and integration tests pass.
+The bounded GPU pilot is the next verification step.
 
 This is the entry point for the supplied transcript and ten screenshots. Values below
 are author-reported or transcribed unless marked as derived. None of the reported
 scores or runtime measurements are local reproduction results.
 
+- [Implemented reconstruction and explicit assumptions](patrick-implementation.md)
 - [Architecture diagram, block code, and full displayed configuration](patrick-yam-architecture.md)
 - [Source notes and evaluation constraints](patrick-yam-source-notes.md)
 - [Validation boundary audit and explicit local scenarios](patrick-yam-validation.md)
@@ -86,9 +88,11 @@ blanket prohibition on using released warmup labels.
 
 ## Planned comparison and ablations
 
-These are research tasks, not claims of implemented Patrick Yam functionality.
-Run them only after simulator and causal checks pass, using identical evaluation
-dates and initial checkpoints where the intervention allows it.
+The independent switches are implemented in `configs/patrick.yaml` and
+`experiments/ablations.py`; performance experiments remain outstanding. Run them only
+after simulator and causal checks pass, using identical evaluation dates and initial
+checkpoints where the intervention allows it. Unrecovered details use the explicit
+assumptions in the implementation document.
 
 | Experiment | Vary independently | Keep fixed / validate |
 |---|---|---|
@@ -96,7 +100,7 @@ dates and initial checkpoints where the intervention allows it.
 | Seed ensemble | Number of seeds | Seed order fixed in advance; architecture, epochs, training dates, updates |
 | Recency weighting | Multiplier off/on | Training partition; d_max from offline training only |
 | Full-length weighting | ×1.5 off/on | Separate from recency weighting |
-| Post-normalization | Off/on | Locate the author's exact post-normalization placement first |
+| Post-normalization | Off/on | Assumed final RMSNorm placement; author placement unverified |
 | Temporal capacity | GRU multiplier 1/4 | Attention width 64 and other settings |
 | Auxiliary targets | responder_6 only/all nine | Loss scaling and target order explicitly specified |
 | Fast inference | Separate models/stacked models | Prediction and hidden-state equivalence; runtime and memory |

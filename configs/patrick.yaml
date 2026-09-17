@@ -1,0 +1,46 @@
+method: patrick
+name: patrick_reconstruction
+# Defaults and unresolved choices are documented in docs/patrick-implementation.md.
+features:
+  category_columns: [feature_09, feature_10, feature_11]
+  category_capacities: [83, 13, 540]
+  time_steps: 968
+  time_epsilon: 0.0001
+model:
+  d_model: 64
+  nheads: 8
+  d_hidden: 1024
+  layers: 8
+  rnn_multiplier: 4
+  d_cat: 16
+  head_sizes: [256, 128]
+  dropout: 0.0
+  post_norm: false
+  auxiliary_targets: true
+  balance_losses: true
+  target_weights: [1, 1, 1, 6, 2, 2, 12, 5, 5]
+training:
+  epochs: 1
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  betas: [0.95, 0.9999]
+  device: cpu
+  recency_weighting: true
+  full_length_weighting: true
+  gradient_clip: 1.0
+online:
+  enabled: true
+  learning_rate: 0.0003
+  steps: 3
+  betas: [0.8, 0.95]
+  reset_daily_optimizer: false
+  gradient_clip: 1.0
+ensemble:
+  architectures: [patrick]
+  seed_ensembling: false
+  seeds: [0, 1, 2]
+cv:
+  min_date: 0
+  n_splits: 1
+  gap_days: 120
+  validation_days: 200

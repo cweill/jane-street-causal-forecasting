@@ -6,9 +6,11 @@ GRU pipeline. **Correctness comes before experiments:** every CLI training/ablat
 first executes the metric, protocol, and causal tests. No leaderboard optimization has
 been performed, and no leaderboard score reproduction is claimed.
 
-For the planned second-place comparison, see the
-[Patrick Yam reproduction tracker](docs/patrick-yam-tracker.md): source screenshots,
-transcribed architecture/configuration, reported results, and unresolved details.
+Patrick Yam’s second-place architecture is also implemented as a documented
+[reconstruction](docs/patrick-implementation.md), with train-only preprocessing,
+causal asset attention/GRU inference, and delayed online updates. The
+[reproduction tracker](docs/patrick-yam-tracker.md) preserves the source screenshots,
+reported results, and unresolved details. Both methods use the same simulator and metric.
 
 The [bounded Modal GPU pilot](docs/modal-pilot.md) runs the real-data correctness
 checks on dates 700–708 and downloads its checkpoints, audits, and runtime report.

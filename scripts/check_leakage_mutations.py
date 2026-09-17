@@ -51,6 +51,27 @@ MUTATIONS = [
             "tests/test_offline_boundaries.py::test_source_is_never_read_outside_training_partition"
         ],
     },
+    {
+        "name": "patrick_mixes_future_features_into_prefix",
+        "file": "src/models/patrick_yam.py",
+        "replacements": [
+            (
+                "x = torch.where(mask[..., None], x, 0.0).clamp(-10, 10)",
+                "x = torch.where(mask[..., None], x, 0.0).clamp(-10, 10)\n        x = x + x.mean(dim=1, keepdim=True)",
+            )
+        ],
+        "tests": [
+            "tests/test_patrick_model.py::test_future_inputs_cannot_change_prefix_or_receive_prefix_gradient"
+        ],
+    },
+    {
+        "name": "patrick_fits_future_partition",
+        "file": "src/training/patrick.py",
+        "replacements": [("dates = tuple(dates)", "dates = tuple(source.dates())")],
+        "tests": [
+            "tests/test_patrick_pipeline.py::test_preprocessing_fits_only_training_and_unknown_categories_stay_unknown"
+        ],
+    },
 ]
 
 

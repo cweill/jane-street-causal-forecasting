@@ -24,7 +24,7 @@ from src.data.loader import FrameSource
 from src.data.schema import FEATURES, KEYS, RESPONDERS, validate_test
 from src.experiment import PredictionWriter
 from src.safety import safety_gate
-from src.training.offline import prepare_training, train_model
+from src.training.dispatch import fit, prepare
 
 TRAIN = tuple(range(700, 704))
 WARMUP = (704, 705)
@@ -177,7 +177,7 @@ def replay(frame, checkpoint, directory, device, online):
     return summary
 
 
-def run_pilot(data, output, device="cuda"):
+def run_pilot(data, output, device="cuda", method="grigoreva"):
     gate = safety_gate()
     torch.set_num_threads(4)
     torch.use_deterministic_algorithms(True)
@@ -189,8 +189,15 @@ def run_pilot(data, output, device="cuda"):
     output.mkdir(parents=True, exist_ok=False)
     frame = pl.read_parquet(data).sort(KEYS)
     source = validate_panel(frame)
-    config = load_config(Path(__file__).resolve().parents[1] / "configs/real_data_pilot.yaml")
-    config = replace(config, training=replace(config.training, device=device))
+    if method not in {"grigoreva", "patrick"}:
+        raise ValueError("unknown pilot method")
+    filename = "patrick.yaml" if method == "patrick" else "real_data_pilot.yaml"
+    config = load_config(Path(__file__).resolve().parents[1] / "configs" / filename)
+    config = replace(
+        config,
+        training=replace(config.training, device=device, epochs=1),
+        cv=replace(config.cv, min_date=700, gap_days=2, validation_days=3, n_splits=1),
+    )
     write_json(output / "config.json", config.to_dict())
     write_json(output / "safety_gate.json", gate)
     write_json(output / "splits.json", {"train": TRAIN, "warmup": WARMUP, "scored": SCORED})
@@ -213,13 +220,11 @@ def run_pilot(data, output, device="cuda"):
     )
     started = perf_counter()
     print("Preparing training dates 700–703", flush=True)
-    prepared = prepare_training(source, TRAIN, config.features, output / "training_cache")
+    prepared = prepare(config, source, TRAIN, output / "training_cache")
     preparation_seconds = perf_counter() - started
-    print(
-        "Fitting published gru3 dimensions, four auxiliary branches, seed 0, one epoch", flush=True
-    )
+    print(f"Fitting {method}: published dimensions, seed 0, one epoch", flush=True)
     start = perf_counter()
-    model, history = train_model(prepared, config.model, seed=0, epochs=1, device=device)
+    model, history = fit(config, prepared, config.model, 0)
     if device == "cuda":
         torch.cuda.synchronize()
     training_seconds = perf_counter() - start
@@ -256,6 +261,7 @@ def run_pilot(data, output, device="cuda"):
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     summary = {
         "status": "passed",
+        "method": method,
         "device": device,
         "gpu": torch.cuda.get_device_name() if device == "cuda" else None,
         "versions": {p: importlib.metadata.version(p) for p in ("torch", "polars", "numpy")},
@@ -288,8 +294,9 @@ if __name__ == "__main__":
     parser.add_argument("--data", default="data/competition/train.parquet")
     parser.add_argument("--output", required=True)
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu")
+    parser.add_argument("--method", choices=["grigoreva", "patrick"], default="grigoreva")
     args = parser.parse_args()
     if args.mode == "prepare":
         prepare_slice(args.data, args.output)
     else:
-        run_pilot(args.data, args.output, args.device)
+        run_pilot(args.data, args.output, args.device, args.method)

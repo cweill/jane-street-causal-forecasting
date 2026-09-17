@@ -15,6 +15,9 @@ CAUSAL_TESTS = [
     "test_offline_boundaries.py",
     "test_online_update_timing.py",
     "test_gateway_parity.py",
+    "test_patrick_model.py",
+    "test_patrick_pipeline.py",
+    "test_pilot_boundaries.py",
 ]
 
 
