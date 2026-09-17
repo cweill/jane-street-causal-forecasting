@@ -1,7 +1,8 @@
 # Modal GPU correctness pilot
 
 The first successful real-data run is recorded in the
-[correctness and runtime report](real-data-pilot-report.md).
+[Grigoreva correctness and runtime report](real-data-pilot-report.md).
+The same pilot also passed for [Patrick’s reconstruction](patrick-pilot-report.md).
 
 The pilot uses the existing Modal profile and a dedicated `janestreet-repro-pilot`
 Volume. It launches an ephemeral App, not a scheduled or persistent deployment.

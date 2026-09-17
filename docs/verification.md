@@ -76,3 +76,12 @@ mutations were detected. GitHub Actions also validates the shared harness on Lin
 
 The [implementation decisions](patrick-implementation.md) distinguish recovered
 slide settings from assumptions. No reported competition score is reproduced.
+
+## Patrick CUDA pilot (2026-09-17)
+
+The [Patrick L4 pilot](patrick-pilot-report.md) passed its 53-test remote gate,
+full-size one-epoch training, matched frozen/online replays, and future-responder
+perturbation checks. Measured work took 450.81 seconds with 4.29 GiB peak PyTorch
+CUDA allocation. Independent score recomputation agreed within 7e-16. The
+archive was verified and downloaded; Modal reported the App stopped with zero tasks.
+The final holdout remains unused.

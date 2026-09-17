@@ -1,0 +1,352 @@
+{
+  "run_id": "20260917T232828Z-0b458313",
+  "modal_app": "https://modal.com/apps/cweill/main/ap-my1K6wKtmYjA03KBIXHfvJ",
+  "app_stopped": true,
+  "config": {
+    "cv": {
+      "gap_days": 2,
+      "max_train_days": null,
+      "min_date": 700,
+      "min_train_days": 1,
+      "n_splits": 1,
+      "validation_days": 3
+    },
+    "ensemble": {
+      "architectures": [
+        "patrick"
+      ],
+      "seed_ensembling": false,
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "features": {
+      "category_capacities": [
+        83,
+        13,
+        540
+      ],
+      "category_columns": [
+        "feature_09",
+        "feature_10",
+        "feature_11"
+      ],
+      "time_epsilon": 0.0001,
+      "time_steps": 968
+    },
+    "method": "patrick",
+    "model": {
+      "auxiliary_targets": true,
+      "balance_losses": true,
+      "d_cat": 16,
+      "d_hidden": 1024,
+      "d_model": 64,
+      "dropout": 0.0,
+      "head_sizes": [
+        256,
+        128
+      ],
+      "layers": 8,
+      "nheads": 8,
+      "post_norm": false,
+      "rnn_multiplier": 4,
+      "target_weights": [
+        1,
+        1,
+        1,
+        6,
+        2,
+        2,
+        12,
+        5,
+        5
+      ]
+    },
+    "name": "patrick_reconstruction",
+    "online": {
+      "betas": [
+        0.8,
+        0.95
+      ],
+      "enabled": true,
+      "gradient_clip": 1.0,
+      "learning_rate": 0.0003,
+      "reset_daily_optimizer": false,
+      "steps": 3
+    },
+    "training": {
+      "betas": [
+        0.95,
+        0.9999
+      ],
+      "device": "cuda",
+      "epochs": 1,
+      "full_length_weighting": true,
+      "gradient_clip": 1.0,
+      "learning_rate": 0.0005,
+      "recency_weighting": true,
+      "weight_decay": 0.0001
+    }
+  },
+  "splits": {
+    "scored": [
+      706,
+      707,
+      708
+    ],
+    "train": [
+      700,
+      701,
+      702,
+      703
+    ],
+    "warmup": [
+      704,
+      705
+    ]
+  },
+  "input_sha256": "ef365011d730937466fc980c57d82915390875a03f8ad357abd26c2ce1aa3292",
+  "source_and_tests_sha256": "4b584f7d27d8f95fc3644fc0010c3afdabeca75b3bcd34fb98bb5bee5fe3895b",
+  "remote_safety_gate": ".....................................................                    [100%]\n53 passed in 11.68s\n",
+  "result": {
+    "checks": {
+      "first_warmup_day_predictions_identical": true,
+      "future_responder_perturbation_final_weights_identical": true,
+      "future_responder_perturbation_predictions_identical": true,
+      "same_initial_checkpoint": true
+    },
+    "cuda_peak_allocated_bytes": 4609713664,
+    "device": "cuda",
+    "gpu": "NVIDIA L4",
+    "method": "patrick",
+    "offline": {
+      "call_seconds_p50_p95_max": [
+        0.025367456500006824,
+        0.027515649500005068,
+        0.06487124499999908
+      ],
+      "calls": 4840,
+      "daily": [
+        {
+          "calls": 968,
+          "date": 704,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 705,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 706,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 707,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 708,
+          "rows": 28072
+        }
+      ],
+      "denominator": 76410.93052829162,
+      "final_weights_sha256": "21cb547ef313af8c8ca787f6d8bc4a1df0b6886df3d8c0ef52c78e05fc6c1a0e",
+      "initial_weights_sha256": "21cb547ef313af8c8ca787f6d8bc4a1df0b6886df3d8c0ef52c78e05fc6c1a0e",
+      "lag_releases": [
+        {
+          "date": 704,
+          "rows": 28072,
+          "source_date": 703,
+          "time": 0
+        },
+        {
+          "date": 705,
+          "rows": 28072,
+          "source_date": 704,
+          "time": 0
+        },
+        {
+          "date": 706,
+          "rows": 28072,
+          "source_date": 705,
+          "time": 0
+        },
+        {
+          "date": 707,
+          "rows": 28072,
+          "source_date": 706,
+          "time": 0
+        },
+        {
+          "date": 708,
+          "rows": 28072,
+          "source_date": 707,
+          "time": 0
+        }
+      ],
+      "online": false,
+      "scaler_frozen": true,
+      "score": -0.004389643757547246,
+      "scored_rows": 84216,
+      "seconds": 137.71637066699998,
+      "sse": 76746.3472924935,
+      "updates": []
+    },
+    "online": {
+      "call_seconds_p50_p95_max": [
+        0.025798274500004936,
+        0.028271596000000444,
+        3.18286074400001
+      ],
+      "calls": 4840,
+      "daily": [
+        {
+          "calls": 968,
+          "date": 704,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 705,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 706,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 707,
+          "rows": 28072
+        },
+        {
+          "calls": 968,
+          "date": 708,
+          "rows": 28072
+        }
+      ],
+      "denominator": 76410.93052829162,
+      "final_weights_sha256": "83642e02b35fe5dc1029d5303b5c4bbed2916247ccae3cfdc166ed7acad18dd7",
+      "initial_weights_sha256": "21cb547ef313af8c8ca787f6d8bc4a1df0b6886df3d8c0ef52c78e05fc6c1a0e",
+      "lag_releases": [
+        {
+          "date": 704,
+          "rows": 28072,
+          "source_date": 703,
+          "time": 0
+        },
+        {
+          "date": 705,
+          "rows": 28072,
+          "source_date": 704,
+          "time": 0
+        },
+        {
+          "date": 706,
+          "rows": 28072,
+          "source_date": 705,
+          "time": 0
+        },
+        {
+          "date": 707,
+          "rows": 28072,
+          "source_date": 706,
+          "time": 0
+        },
+        {
+          "date": 708,
+          "rows": 28072,
+          "source_date": 707,
+          "time": 0
+        }
+      ],
+      "online": true,
+      "scaler_frozen": true,
+      "score": 0.0038595494383377726,
+      "scored_rows": 84216,
+      "seconds": 151.786076169,
+      "sse": 76116.01876428828,
+      "updates": [
+        {
+          "models": 1,
+          "optimizer_reset_daily": false,
+          "released_at": [
+            705,
+            0
+          ],
+          "rows": 28072,
+          "source_date": 704,
+          "steps": 3,
+          "target": "all_9"
+        },
+        {
+          "models": 1,
+          "optimizer_reset_daily": false,
+          "released_at": [
+            706,
+            0
+          ],
+          "rows": 28072,
+          "source_date": 705,
+          "steps": 3,
+          "target": "all_9"
+        },
+        {
+          "models": 1,
+          "optimizer_reset_daily": false,
+          "released_at": [
+            707,
+            0
+          ],
+          "rows": 28072,
+          "source_date": 706,
+          "steps": 3,
+          "target": "all_9"
+        },
+        {
+          "models": 1,
+          "optimizer_reset_daily": false,
+          "released_at": [
+            708,
+            0
+          ],
+          "rows": 28072,
+          "source_date": 707,
+          "steps": 3,
+          "target": "all_9"
+        }
+      ]
+    },
+    "preparation_seconds": 7.369336211,
+    "process_peak_rss_bytes": 5692784640,
+    "score_note": "Execution pilot only; four training days and one epoch are not a performance comparison.",
+    "status": "passed",
+    "total_seconds": 450.813827881,
+    "training_seconds": 3.437583744000001,
+    "versions": {
+      "numpy": "2.5.3",
+      "polars": "1.44.2",
+      "torch": "2.14.0"
+    }
+  },
+  "independent_verification": {
+    "offline": {
+      "score": -0.004389643757547912,
+      "absolute_error": 6.661338147750939e-16,
+      "scored_rows": 84216
+    },
+    "online": {
+      "score": 0.0038595494383379947,
+      "absolute_error": 2.220446049250313e-16,
+      "scored_rows": 84216
+    },
+    "future_predictions_and_weights_identical": true
+  }
+}

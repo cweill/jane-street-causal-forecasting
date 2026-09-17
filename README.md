@@ -15,7 +15,8 @@ reported results, and unresolved details. Both methods use the same simulator an
 The [bounded Modal GPU pilot](docs/modal-pilot.md) runs the real-data correctness
 checks on dates 700–708 and downloads its checkpoints, audits, and runtime report.
 The [first L4 pilot passed](docs/real-data-pilot-report.md), including a real-data
-future-responder perturbation check.
+future-responder perturbation check. The
+[Patrick L4 pilot also passed](docs/patrick-pilot-report.md) on the identical slice.
 
 ## Run locally
 

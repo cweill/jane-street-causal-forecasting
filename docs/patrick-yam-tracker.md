@@ -1,7 +1,8 @@
 # Patrick Yam reproduction tracker
 
 Updated: 2026-09-17. Status: reconstruction implemented; local causal and integration tests pass.
-The bounded GPU pilot is the next verification step.
+The [bounded L4 pilot](patrick-pilot-report.md) also passed; predictive comparison
+and recovery of unresolved source details remain outstanding.
 
 This is the entry point for the supplied transcript and ten screenshots. Values below
 are author-reported or transcribed unless marked as derived. None of the reported
