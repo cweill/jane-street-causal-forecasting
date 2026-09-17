@@ -143,7 +143,7 @@ def test_missing_symbols_row_permutation_and_day_reset(panel):
         return b.predict(test.reverse(), lags).reverse()
 
     pb = APISimulator(source, [2, 3]).run(permute).predictions
-    np.testing.assert_allclose(pa["responder_6"], pb["responder_6"], atol=1e-7)
+    np.testing.assert_array_equal(pa["responder_6"], pb["responder_6"])
     assert a.hidden_dates == {3}
 
 

@@ -141,6 +141,11 @@ class StreamingPredictor:
 
     def predict(self, test: pl.DataFrame, lags: pl.DataFrame | None):
         validate_test(test)
+        # Canonical batches also remove platform-dependent GEMM/reduction rounding
+        # differences when the API presents the same symbols in another order.
+        original_rows = test.select("row_id")
+        order = np.argsort(test["symbol_id"].to_numpy(), kind="stable")
+        test = test[order]
         date, time = int(test["date_id"][0]), int(test["time_id"][0])
         if self._last_key is not None and (date, time) <= self._last_key:
             raise ValueError("predict calls must be strictly chronological")
@@ -161,6 +166,6 @@ class StreamingPredictor:
             for m, states in zip(self.models, self._states, strict=True)
         ]
         self._last_key = (date, time)
-        return test.select("row_id").with_columns(
-            pl.Series("responder_6", np.mean(predictions, axis=0))
+        return original_rows.with_columns(
+            pl.Series("responder_6", np.mean(predictions, axis=0)[np.argsort(order)])
         )
