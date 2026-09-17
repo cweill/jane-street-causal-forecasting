@@ -1,0 +1,24 @@
+name: grigoreva_online
+features:
+  market_average: true
+  rolling: true
+  rolling_window: 1000
+model:
+  architecture: gru_mlp
+  auxiliary_targets: true
+training:
+  epochs: 5
+  learning_rate: 0.0005
+  device: cpu
+online:
+  enabled: true
+  learning_rate: 0.0003
+ensemble:
+  architectures: [gru3, gru_mlp]
+  seed_ensembling: true
+  seeds: [0, 1, 2]
+cv:
+  min_date: 700
+  n_splits: 2
+  validation_days: 200
+  gap_days: 0

@@ -1,0 +1,74 @@
+{
+  "source": "User-supplied screenshots of Patrick Yam presentation",
+  "saved_on": "2026-09-17",
+  "screenshots": [
+    {
+      "id": "architecture",
+      "file": "architecture.png",
+      "bytes": 172897,
+      "sha256": "1160dfe5345b24f516e2dfece68ce64fc4d3c697e14c4688bfd936ab2e32cc79"
+    },
+    {
+      "id": "transformer-block",
+      "file": "transformer-block.png",
+      "bytes": 508174,
+      "sha256": "8c70f0b03759f663e47775f7b747c4b76c07c5a95954f89c0f4be309bbd99240"
+    },
+    {
+      "id": "sample-weighting",
+      "file": "sample-weighting.png",
+      "bytes": 221609,
+      "sha256": "1fe9af41cdcdfac6eb2097d4c14d7ed78f3ae6d40cc9b171f1bd792526e0a662"
+    },
+    {
+      "id": "configuration",
+      "file": "configuration.png",
+      "bytes": 382687,
+      "sha256": "2e4a1ce4f23016a62fc65b8aea7c6e34a327f204ddbf39916cf586ae69277d60"
+    },
+    {
+      "id": "fixed-epochs",
+      "file": "fixed-epochs.png",
+      "bytes": 318477,
+      "sha256": "4d3e348e93fab52256510951068d4452f6e23478e685ab7b12bf368e2ea4363d"
+    },
+    {
+      "id": "seed-ensembling",
+      "file": "seed-ensembling.png",
+      "bytes": 156719,
+      "sha256": "34f83a80ccbd809196abf38fe514c81a536dc3bd7d7f0adc82bbdd5e312ddf76"
+    },
+    {
+      "id": "online-settings",
+      "file": "online-settings.png",
+      "bytes": 273745,
+      "sha256": "48db0cabf75cfea41b5b88cb0cac62f72d75ff2a962844914221931c895a1d8c"
+    },
+    {
+      "id": "online-ablation",
+      "file": "online-ablation.png",
+      "bytes": 279074,
+      "sha256": "776f6cdde37fd8d68b2b712fdcb9f8ca66a839e7a2ed5307ab43785f542320b4"
+    },
+    {
+      "id": "fast-inference",
+      "file": "fast-inference.png",
+      "bytes": 296294,
+      "sha256": "1a5fc3032f880197e676a92be35c9a0e2b6f4bf8f01ff760d238edc3c81d02d8"
+    },
+    {
+      "id": "reported-results",
+      "file": "reported-results.png",
+      "bytes": 439408,
+      "sha256": "e9fcad2c9422ca674d7f5dd26f55f02a4768127374f41ccc6a432b79e9059b0b"
+    }
+  ],
+  "pdf_renders": [
+    {
+      "file": "evaluation-split.png",
+      "pdf_page": 29,
+      "source_pdf_sha256": "e3bf4d40c0dc56be6fee891ffa4e0544c454e1a394077a956852cbfca8c0a396",
+      "sha256": "a70d6b0c80899728bef74535ba782af0fb3d2965726fc6e7c5424472f975fb76"
+    }
+  ]
+}

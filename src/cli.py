@@ -1,0 +1,81 @@
+"""Local research commands. All fitting commands run the safety gate first."""
+
+import argparse
+import json
+import os
+from dataclasses import replace
+from pathlib import Path
+
+from src.config import load_config
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("verify", help="run metric, protocol and causal checks")
+    synthetic = sub.add_parser("synthetic", help="write deterministic synthetic parquet")
+    synthetic.add_argument("--output", required=True)
+    synthetic.add_argument("--days", type=int, default=10)
+    for name in ("run", "ablations", "smoke"):
+        command = sub.add_parser(name)
+        command.add_argument("--config", default="configs/baseline.yaml")
+        command.add_argument("--output", required=True)
+        if name != "smoke":
+            command.add_argument(
+                "--data", required=True, help="train.parquet file or partition directory"
+            )
+    args = parser.parse_args()
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    if args.command == "verify":
+        from src.safety import safety_gate
+
+        print(safety_gate()["output"])
+        return
+    if args.command == "synthetic":
+        from src.data.synthetic import synthetic_panel
+
+        path = Path(args.output)
+        if path.exists():
+            raise FileExistsError(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        synthetic_panel(days=args.days).write_parquet(path)
+        print(path)
+        return
+    config = load_config(args.config)
+    if args.command == "smoke":
+        from src.data.loader import FrameSource
+        from src.data.synthetic import synthetic_panel
+
+        # Small dimensions and one epoch check execution only; flags are preserved.
+        config = replace(
+            config,
+            name=config.name + "_synthetic_smoke",
+            training=replace(config.training, epochs=1, device="cpu"),
+            model=replace(
+                config.model,
+                hidden_sizes=(8,),
+                linear_sizes=(6,),
+                dropout=(0.1,),
+                linear_dropout=(0.1,),
+            ),
+            features=replace(config.features, rolling_window=3),
+            cv=replace(config.cv, min_date=0, n_splits=2, validation_days=2, gap_days=0),
+        )
+        source = FrameSource(synthetic_panel())
+    else:
+        from src.data.loader import ParquetSource
+
+        source = ParquetSource(args.data)
+    if args.command == "ablations":
+        from experiments.ablations import run_ablations
+
+        result = run_ablations(source, config, args.output)
+    else:
+        from src.experiment import run_experiment
+
+        result = run_experiment(source, config, args.output)
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    main()

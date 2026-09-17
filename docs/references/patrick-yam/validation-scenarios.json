@@ -1,0 +1,68 @@
+{
+  "status": "documented_interpretations_not_author_verified",
+  "active_training_config": false,
+  "interval_convention": "inclusive",
+  "available_dates": {
+    "min": 0,
+    "max": 1698,
+    "count": 1699
+  },
+  "printed_slide": {
+    "train": [
+      0,
+      1379
+    ],
+    "warmup": [
+      1380,
+      1499
+    ],
+    "scored": [
+      1500,
+      1699
+    ]
+  },
+  "local_candidates": [
+    {
+      "name": "printed_starts_intersect_available",
+      "train": [
+        0,
+        1379
+      ],
+      "warmup": [
+        1380,
+        1499
+      ],
+      "scored": [
+        1500,
+        1698
+      ],
+      "counts": {
+        "train": 1380,
+        "warmup": 120,
+        "scored": 199
+      },
+      "warmup_contributes_to_score": false
+    },
+    {
+      "name": "preserve_120_warmup_200_scored",
+      "train": [
+        0,
+        1378
+      ],
+      "warmup": [
+        1379,
+        1498
+      ],
+      "scored": [
+        1499,
+        1698
+      ],
+      "counts": {
+        "train": 1379,
+        "warmup": 120,
+        "scored": 200
+      },
+      "warmup_contributes_to_score": false
+    }
+  ]
+}

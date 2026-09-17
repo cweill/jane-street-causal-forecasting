@@ -1,0 +1,24 @@
+name: baseline
+features:
+  market_average: false
+  rolling: false
+  rolling_window: 1000
+model:
+  architecture: gru_mlp
+  auxiliary_targets: false
+training:
+  epochs: 5
+  learning_rate: 0.0005
+  device: cpu
+online:
+  enabled: false
+  learning_rate: 0.0003
+ensemble:
+  architectures: [gru_mlp]
+  seed_ensembling: false
+  seeds: [0, 1, 2]
+cv:
+  min_date: 700
+  n_splits: 2
+  validation_days: 200
+  gap_days: 0

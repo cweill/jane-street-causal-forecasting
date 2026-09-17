@@ -1,0 +1,7 @@
+step,change,local_validation,public_leaderboard,evidence_type,source
+0,First model,0.01320,0.00872,author_reported_apparently_cumulative,reported-results.png
+1,Tuned hyperparameters,0.01695,0.01103,author_reported_apparently_cumulative,reported-results.png
+2,Sample weighting scheme,0.01811,0.01161,author_reported_apparently_cumulative,reported-results.png
+3,More seeds,0.01890,0.01208,author_reported_apparently_cumulative,reported-results.png
+4,Remove post-normalization,0.01967,0.01255,author_reported_apparently_cumulative,reported-results.png
+5,GRU multiplier x4,0.02059,0.01303,author_reported_apparently_cumulative,reported-results.png

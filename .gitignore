@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+artifacts/
+data/
+!src/data/
+.env
+.env.*
+!.env.example
+.modal.toml
+kaggle.json
+.DS_Store
