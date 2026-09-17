@@ -4,17 +4,19 @@ Verified locally on 2026-09-17 with Python 3.12.12 on macOS ARM64, using `uv.loc
 
 | Check | Result |
 |---|---|
-| `python -m pytest -q` | 47 passed |
+| `python -m pytest -q` | 61 passed |
 | `ruff check .` | Passed |
-| `ruff format --check .` | 37 files formatted correctly |
+| `ruff format --check .` | 56 files formatted correctly |
 | Actual distributed gateway batching method | All 15 synthetic batches matched |
-| Deliberate leakage mutations in disposable copies | All 3 detected by failing tests |
-| Six-member online synthetic CLI smoke | Both temporal folds completed |
+| Deliberate leakage mutations in disposable copies | All 5 detected by failing tests |
+| Six-member Grigoreva and single-seed Patrick online synthetic CLI smoke | Both temporal folds completed for each |
 | Reference + five one-switch ablations | All six configurations completed both folds |
 | Checkpoint reload, parquet loader, unknown/missing symbols | Covered by tests and CLI replay |
 
-The three negative controls expose a current responder in the callback, deliver same-day
-responders at time zero, and fit outside the declared training partition. Each caused a
+The five negative controls expose a current responder in the callback, deliver same-day
+responders at time zero, fit Grigoreva preprocessing outside its declared partition,
+mix future features into Patrick’s temporal input, and fit Patrick preprocessing
+outside its declared partition. Each caused a
 test failure rather than an import or test-collection error. The working source was not
 modified during these checks.
 
@@ -27,7 +29,8 @@ Local generated artifacts:
 Synthetic runs use smaller dimensions, one epoch, and a short rolling window. Their
 scores are not evidence of predictive improvements. The published network dimensions
 were separately instantiated and exercised in forward-pass tests. No full competition
-dataset training, CUDA run, Kaggle RPC submission, or leaderboard optimization was done.
+dataset training, Kaggle RPC submission, or leaderboard optimization was done.
+Bounded real-data CUDA runs are recorded below.
 
 Repeat the commands in `README.md` for a fresh verification record after changes.
 
@@ -48,8 +51,8 @@ The official gateway differs from the previously inspected mirror only in import
 ordering. After inspecting that diff, its exact hash was added to the verification
 allowlist. Running `scripts.verify_gateway` against the downloaded official file
 matched all 15 synthetic batches. This is a batching/lag differential check; it does
-not establish full RPC or hosted-runtime equivalence. No training on the downloaded
-competition data has been started.
+not establish full RPC or hosted-runtime equivalence. At that initial download
+checkpoint, training had not yet started; subsequent pilots are recorded below.
 
 ## Real-data CUDA pilot (later on 2026-09-17)
 
@@ -61,3 +64,15 @@ finished in 320.70 seconds of measured pilot work with 2.09 GiB peak PyTorch CUD
 allocation. Artifacts were downloaded and verified. This supersedes the earlier
 statement that no CUDA or real-data training had yet been run; full competition
 training and leaderboard optimization still have not been performed.
+
+## Patrick local integration (2026-09-17)
+
+All 61 tests pass, including training-only vocabularies and statistics, temporal
+prefix and gradient causality, missing-asset masking, symbol permutation,
+full-day versus cached inference, checkpoint replay, delayed online learning,
+and independent seed averaging. The Patrick CLI smoke completed both temporal
+folds after the mandatory safety gate. Both additional deliberate leakage
+mutations were detected. GitHub Actions also validates the shared harness on Linux.
+
+The [implementation decisions](patrick-implementation.md) distinguish recovered
+slide settings from assumptions. No reported competition score is reproduced.
