@@ -8,8 +8,9 @@ from pathlib import Path
 import polars as pl
 
 from src.artifacts import load_predictor, save_predictor, write_json
-from src.cv import temporal_folds
+from src.cv import configured_folds
 from src.data.api_simulator import APISimulator
+from src.data.loader import RestrictedDateSource
 from src.safety import safety_gate
 from src.training.dispatch import fit, prepare
 
@@ -60,6 +61,8 @@ def run_experiment(source, config, output):
 
 
 def _run_verified(source, config, output, gate):
+    # Validate dates before creating artifacts or reading any feature/target rows.
+    folds = configured_folds(source.dates(), config.cv)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     write_json(output / "safety_gate.json", gate)
@@ -72,11 +75,11 @@ def _run_verified(source, config, output, gate):
         },
     )
     write_json(output / "data_manifest.json", source_manifest(source))
-    cv = asdict(config.cv)
-    min_date = cv.pop("min_date")
-    dates = [d for d in source.dates() if d >= min_date]
-    folds = temporal_folds(dates, **cv)
     write_json(output / "splits.json", [asdict(f) for f in folds])
+    if config.cv.validation_end is not None:
+        source = RestrictedDateSource(
+            source, range(config.cv.min_date, config.cv.validation_end + 1)
+        )
     results = []
     for fold in folds:
         directory = output / f"fold_{fold.index}"
@@ -86,7 +89,8 @@ def _run_verified(source, config, output, gate):
             f"validate {fold.validation_dates[0]}..{fold.validation_dates[-1]}",
             flush=True,
         )
-        prepared = prepare(config, source, fold.train_dates, directory / "training_cache")
+        training_source = RestrictedDateSource(source, fold.train_dates)
+        prepared = prepare(config, training_source, fold.train_dates, directory / "training_cache")
         models, seeds, histories = [], [], []
         for model_config, seed in config.members:
             label = getattr(model_config, "architecture", "patrick")

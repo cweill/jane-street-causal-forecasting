@@ -1,6 +1,6 @@
 """Deterministic expanding or rolling training windows, split only at date boundaries."""
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
 @dataclass(frozen=True)
@@ -13,6 +13,44 @@ class TemporalFold:
     @property
     def replay_dates(self):
         return self.warmup_dates + self.validation_dates
+
+
+def configured_folds(dates, config):
+    """Resolve fixed calendar boundaries, or retain the legacy tail-count splitter.
+
+    A fixed protocol requires every declared date. Extra source dates are ignored;
+    missing dates never shorten or shift its training, warmup or scored intervals.
+    """
+    options = asdict(config)
+    start = options.pop("min_date")
+    boundaries = [options.pop(k) for k in ("train_end", "warmup_end", "validation_end")]
+    if all(value is None for value in boundaries):
+        return temporal_folds([d for d in dates if d >= start], **options)
+    if any(type(value) is not int for value in [start, *boundaries]):
+        raise ValueError("fixed protocols require all three integer boundaries")
+    train_end, warmup_end, validation_end = boundaries
+    if not 0 <= start <= train_end <= warmup_end < validation_end:
+        raise ValueError("invalid fixed protocol ordering")
+    if (
+        config.n_splits != 1
+        or config.max_train_days is not None
+        or config.gap_days != warmup_end - train_end
+        or config.validation_days != validation_end - warmup_end
+        or train_end - start + 1 < config.min_train_days
+    ):
+        raise ValueError("split counts conflict with fixed boundaries")
+    required = set(range(start, validation_end + 1))
+    missing = sorted(required - set(dates))
+    if missing:
+        raise ValueError(f"fixed protocol dates missing: {missing[:10]}")
+    return [
+        TemporalFold(
+            0,
+            tuple(range(start, train_end + 1)),
+            tuple(range(train_end + 1, warmup_end + 1)),
+            tuple(range(warmup_end + 1, validation_end + 1)),
+        )
+    ]
 
 
 def temporal_folds(

@@ -18,6 +18,9 @@ class CVConfig:
     gap_days: int = 0
     min_train_days: int = 1
     max_train_days: int | None = None
+    train_end: int | None = None
+    warmup_end: int | None = None
+    validation_end: int | None = None
 
 
 @dataclass(frozen=True)

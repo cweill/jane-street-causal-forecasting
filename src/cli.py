@@ -84,7 +84,16 @@ def main():
             training=replace(config.training, epochs=1, device="cpu"),
             model=model,
             features=features,
-            cv=replace(config.cv, min_date=0, n_splits=2, validation_days=2, gap_days=0),
+            cv=replace(
+                config.cv,
+                min_date=0,
+                n_splits=2,
+                validation_days=2,
+                gap_days=0,
+                train_end=None,
+                warmup_end=None,
+                validation_end=None,
+            ),
         )
         source = FrameSource(panel)
     else:

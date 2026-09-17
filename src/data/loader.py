@@ -13,6 +13,25 @@ class DaySource(Protocol):
     def day(self, date: int) -> pl.DataFrame: ...
 
 
+class RestrictedDateSource:
+    """Reject out-of-partition reads before reaching the underlying source."""
+
+    def __init__(self, source, dates):
+        self._source = source
+        self._dates = tuple(sorted(set(dates)))
+        self._allowed = set(self._dates)
+        if not self._dates or not self._allowed.issubset(source.dates()):
+            raise ValueError("restricted source dates missing")
+
+    def dates(self):
+        return self._dates
+
+    def day(self, date):
+        if date not in self._allowed:
+            raise ValueError(f"date {date} outside declared partition")
+        return self._source.day(date)
+
+
 class FrameSource:
     def __init__(self, frame: pl.DataFrame):
         self._frame = frame.clone()

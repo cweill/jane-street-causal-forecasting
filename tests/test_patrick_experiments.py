@@ -45,3 +45,44 @@ def test_patrick_cli_smoke_runs_complete_synthetic_experiment(tmp_path, monkeypa
     result = json.loads((output / "result.json").read_text())
     assert len(result["folds"]) == 2
     assert all(fold["online_updates"] > 0 for fold in result["folds"])
+
+
+def test_fixed_development_runner_never_reads_later_days(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from src.config import load_config
+
+    path = Path("configs/patrick_development.yaml")
+    assert path.exists(), "fixed Patrick protocol has not been added"
+    pinned = load_config(path)
+    config = tiny_config()
+    config = replace(
+        config,
+        cv=replace(
+            pinned.cv,
+            train_end=2,
+            warmup_end=3,
+            validation_end=5,
+            gap_days=1,
+            validation_days=2,
+        ),
+    )
+    source = FrameSource(panel())
+
+    class DevelopmentOnly:
+        def dates(self):
+            return source.dates()  # Includes held-out date 6; metadata is permitted.
+
+        def day(self, date):
+            assert date <= 5, "future data read during development run"
+            return source.day(date)
+
+    monkeypatch.setattr("src.experiment.safety_gate", lambda: {"passed": True})
+    result = run_experiment(DevelopmentOnly(), config, tmp_path / "fixed")
+    assert result["folds"][0]["online_updates"] == 2
+    (split,) = json.loads((tmp_path / "fixed/splits.json").read_text())
+    assert split["train_dates"] == [0, 1, 2]
+    assert split["warmup_dates"] == [3]
+    assert split["validation_dates"] == [4, 5]
+    meta = json.loads((tmp_path / "fixed/fold_0/checkpoint/metadata.json").read_text())
+    assert meta["feature_state"]["scaler"]["training_dates"] == [0, 1, 2]
