@@ -47,21 +47,46 @@ def main():
         from src.data.synthetic import synthetic_panel
 
         # Small dimensions and one epoch check execution only; flags are preserved.
-        config = replace(
-            config,
-            name=config.name + "_synthetic_smoke",
-            training=replace(config.training, epochs=1, device="cpu"),
-            model=replace(
+        panel = synthetic_panel()
+        if getattr(config, "method", None) == "patrick":
+            import polars as pl
+
+            model = replace(
+                config.model,
+                d_model=8,
+                nheads=2,
+                d_hidden=16,
+                layers=2,
+                d_cat=2,
+                head_sizes=(12, 8),
+            )
+            features = config.features
+            # The general synthetic fixture uses continuous values everywhere.
+            # Patrick's three categorical columns require a finite vocabulary.
+            panel = panel.with_columns(
+                [
+                    (pl.col("symbol_id") % 2).cast(pl.Float32).alias(c)
+                    for c in features.category_columns
+                ]
+            )
+        else:
+            model = replace(
                 config.model,
                 hidden_sizes=(8,),
                 linear_sizes=(6,),
                 dropout=(0.1,),
                 linear_dropout=(0.1,),
-            ),
-            features=replace(config.features, rolling_window=3),
+            )
+            features = replace(config.features, rolling_window=3)
+        config = replace(
+            config,
+            name=config.name + "_synthetic_smoke",
+            training=replace(config.training, epochs=1, device="cpu"),
+            model=model,
+            features=features,
             cv=replace(config.cv, min_date=0, n_splits=2, validation_days=2, gap_days=0),
         )
-        source = FrameSource(synthetic_panel())
+        source = FrameSource(panel)
     else:
         from src.data.loader import ParquetSource
 

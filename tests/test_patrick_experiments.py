@@ -28,3 +28,20 @@ def test_patrick_runs_through_shared_cv_and_reloads_checkpoint(tmp_path, monkeyp
     assert result["folds"][0]["online_updates"] == 2
     meta = json.loads((tmp_path / "run/fold_0/checkpoint/metadata.json").read_text())
     assert meta["feature_state"]["scaler"]["training_dates"] == [0, 1, 2, 3]
+
+
+def test_patrick_cli_smoke_runs_complete_synthetic_experiment(tmp_path, monkeypatch):
+    from src.cli import main
+
+    monkeypatch.setattr(
+        "src.experiment.safety_gate", lambda: {"passed": True, "test_fixture": True}
+    )
+    output = tmp_path / "smoke"
+    monkeypatch.setattr(
+        "sys.argv",
+        ["js-repro", "smoke", "--config", "configs/patrick.yaml", "--output", str(output)],
+    )
+    main()
+    result = json.loads((output / "result.json").read_text())
+    assert len(result["folds"]) == 2
+    assert all(fold["online_updates"] > 0 for fold in result["folds"])

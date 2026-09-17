@@ -30,6 +30,7 @@ uv run --frozen python -m scripts.check_leakage_mutations
 # Small synthetic runs; reduced network dimensions, one epoch, no financial meaning.
 uv run --frozen js-repro smoke --config configs/baseline.yaml --output artifacts/baseline-smoke
 uv run --frozen js-repro smoke --config configs/online.yaml --output artifacts/online-smoke
+uv run --frozen js-repro smoke --config configs/patrick.yaml --output artifacts/patrick-smoke
 
 # Real research: supply the competition training parquet downloaded from Kaggle.
 uv run --frozen js-repro run --data /path/to/train.parquet \
