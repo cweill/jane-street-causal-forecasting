@@ -19,6 +19,12 @@ The corrected launcher uses a deployed App and `.spawn()`, saving a job ID and
 exiting immediately. A [real submission-lifetime test](references/patrick-submission-rehearsal.json)
 proved that its CPU probe remained pending after the submitter exited, then completed.
 
+The corrected run is `20260918T200909Z-2b3a45f0`, submitted from commit `c4dcde6`
+with FunctionCall `fc-01M2V26FSA5FZHV9AR3E7JRP8A`. Its
+[relaunch manifest](references/patrick-ol-relaunch.json) preserves the unchanged
+model/data settings and links the persistent deployment. The original run remains
+available as failure evidence; the compatible preparation cache is reused.
+
 Both curves start from the same checkpoint. The diagnostic plot includes the
 120-day warmup and uses pooled weighted zero-mean R² over complete trailing
 20-day windows. Primary scores exclude warmup. These replay dates are being

@@ -1,0 +1,163 @@
+{
+  "run_id": "20260918T200909Z-2b3a45f0",
+  "git_commit": "c4dcde629bcc988ee2aa02b11027af54e327bf73",
+  "config": {
+    "method": "patrick",
+    "name": "patrick_ol_reconstruction",
+    "features": {
+      "category_columns": [
+        "feature_09",
+        "feature_10",
+        "feature_11"
+      ],
+      "category_capacities": [
+        83,
+        13,
+        540
+      ],
+      "time_steps": 968,
+      "time_epsilon": 0.0001
+    },
+    "model": {
+      "d_model": 64,
+      "nheads": 8,
+      "d_hidden": 1024,
+      "layers": 8,
+      "rnn_multiplier": 4,
+      "d_cat": 16,
+      "dropout": 0.0,
+      "head_sizes": [
+        256,
+        128
+      ],
+      "post_norm": false,
+      "auxiliary_targets": true,
+      "balance_losses": true,
+      "target_weights": [
+        1,
+        1,
+        1,
+        6,
+        2,
+        2,
+        12,
+        5,
+        5
+      ]
+    },
+    "training": {
+      "epochs": 5,
+      "learning_rate": 0.0005,
+      "weight_decay": 0.0001,
+      "betas": [
+        0.95,
+        0.9999
+      ],
+      "device": "cuda",
+      "recency_weighting": true,
+      "full_length_weighting": true,
+      "gradient_clip": 1.0
+    },
+    "online": {
+      "enabled": true,
+      "learning_rate": 0.0005,
+      "steps": 3,
+      "betas": [
+        0.8,
+        0.95
+      ],
+      "reset_daily_optimizer": false,
+      "gradient_clip": 1.0
+    },
+    "ensemble": {
+      "architectures": [
+        "patrick"
+      ],
+      "seed_ensembling": false,
+      "seeds": [
+        0
+      ]
+    },
+    "cv": {
+      "min_date": 0,
+      "n_splits": 1,
+      "validation_days": 199,
+      "gap_days": 120,
+      "min_train_days": 1,
+      "max_train_days": null,
+      "train_end": 1379,
+      "warmup_end": 1499,
+      "validation_end": 1698
+    }
+  },
+  "local_safety_code_sha256": "dd947c237cf158f7499e0dfa17d75bf871a33c83df804fe63f9cf4e467607868",
+  "files": [
+    {
+      "name": "partition_id=0/part-0.parquet",
+      "sha256": "cdf6a5bff9f18f602c186a1fa97c8c5939c2193e3b2e491d42930c1e273af012",
+      "bytes": 470341709
+    },
+    {
+      "name": "partition_id=1/part-0.parquet",
+      "sha256": "c6f51e0dbdecb43ac2e15ce502e08c01b6b808a8ef5c6367579c82db9b4b13c0",
+      "bytes": 712052470
+    },
+    {
+      "name": "partition_id=2/part-0.parquet",
+      "sha256": "59812ac740fb076e0190a31c818b8711f3288b9c19fd5a87a07391a5e9a1db36",
+      "bytes": 794793536
+    },
+    {
+      "name": "partition_id=3/part-0.parquet",
+      "sha256": "c3fee08d8a7d70549db87a06bbd00ab66d9b861b9db280ec8c7bdfbbb50a3a88",
+      "bytes": 1052392301
+    },
+    {
+      "name": "partition_id=4/part-0.parquet",
+      "sha256": "2b4ed1e03fc009d5a53959a5ebde8b04278244e5414cbc4bb8c5fa4e4f91596a",
+      "bytes": 1322669884
+    },
+    {
+      "name": "partition_id=5/part-0.parquet",
+      "sha256": "21d9d7666caaa633c62bc067e62d9ddc322299b313a9a90446cc4d591b85e882",
+      "bytes": 1407107334
+    },
+    {
+      "name": "partition_id=6/part-0.parquet",
+      "sha256": "3788e41f017c0513f543cfdd5f55db3d0c38c37e28a8c061a6c6976d735a5bed",
+      "bytes": 1630683016
+    },
+    {
+      "name": "partition_id=7/part-0.parquet",
+      "sha256": "c3eabd883e68085afd7a982b38faf49826ab7c184d57db8596b317c61274a423",
+      "bytes": 1661821450
+    },
+    {
+      "name": "partition_id=8/part-0.parquet",
+      "sha256": "fe9a60c3458cf940ee14fbd41efd2497f948d9bc9fa295b76aec5427082d4786",
+      "bytes": 1608257224
+    },
+    {
+      "name": "partition_id=9/part-0.parquet",
+      "sha256": "7bdd9a237e7c91e163c1b80050541a53bc1549b3d959f6b06b755a1042601d06",
+      "bytes": 1639585266
+    }
+  ],
+  "bounds": {
+    "cpu_preparation_seconds": 7200,
+    "gpu_seconds": 43200,
+    "gpu": "L4",
+    "retries": 0
+  },
+  "dataset_sha256": "915138f71873ba970eae0936a21a65b5ef0c19025a99392f89aa319cff2be79b",
+  "submission": {
+    "app": "patrick-online-reproduction",
+    "function": "orchestrate",
+    "function_call_id": "fc-01M2V26FSA5FZHV9AR3E7JRP8A",
+    "submitted_at": "2026-09-18T20:09:18.460393+00:00"
+  },
+  "app_url": "https://modal.com/apps/cweill/main/ap-5hI7ghShhf2WaGsrXGrlQF",
+  "volume": "janestreet-patrick-reproduction",
+  "supersedes": "20260918T003149Z-1720d9aa",
+  "launch_status": "Submitted to deployed App; submitting process exited successfully. This is not a completion record."
+}
