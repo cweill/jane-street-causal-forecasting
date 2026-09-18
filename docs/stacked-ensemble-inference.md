@@ -45,7 +45,16 @@ and verifies that earlier predictions and updates remain unchanged. These tests 
 part of the mandatory experiment safety gate.
 
 Prediction equivalence uses `rtol=2e-5, atol=2e-6`: batched kernels can round
-differently. Online model weights and Adam state must remain bitwise identical to
+differently. GPU parity comparisons require matching full float32 precision:
+`torch.set_float32_matmul_precision("highest")` **and**
+`torch.backends.cudnn.allow_tf32 = False`. The matmul setting alone does not
+disable TF32 inside the reference cuDNN GRU. The diagnostic found a prediction
+difference around `1e-4` with cuDNN TF32 enabled, falling below `1e-6` when disabled.
+The benchmark separately times the TF32 loop and reports its prediction difference;
+it does not call those results strictly equivalent. These benchmark precision
+settings do not change the existing running evaluation.
+
+Under matching precision, online model weights and Adam state must remain bitwise identical to
 the reference because inference does not alter the training calculations.
 
 `scripts/modal_ensemble_benchmark.py` runs a bounded L4 benchmark on the existing
