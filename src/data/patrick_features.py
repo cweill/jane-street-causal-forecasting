@@ -6,7 +6,7 @@ from statistics import NormalDist
 import numpy as np
 
 from src.data.features import BASE, TrainOnlyStandardizer
-from src.data.schema import validate_test
+from src.data.schema import KEYS, TEST_COLUMNS, validate_test
 
 
 @dataclass(frozen=True)
@@ -73,6 +73,21 @@ class PatrickFeatures:
 
     def transform(self, public):
         validate_test(public)
+        return self._transform_rows(public)
+
+    def transform_day(self, public):
+        """Vectorized row-local transform; never fits statistics from this day."""
+        if set(public.columns) != set(TEST_COLUMNS):
+            raise ValueError("only API-visible columns are allowed; responder leak")
+        if (
+            public.is_empty()
+            or public["date_id"].n_unique() != 1
+            or public.select(KEYS).is_duplicated().any()
+        ):
+            raise ValueError("expected one nonempty day with unique keys")
+        return self._transform_rows(public)
+
+    def _transform_rows(self, public):
         if self.maps is None:
             raise ValueError("freeze preprocessing before use")
         x = self.scaler.transform(public.select(BASE).to_numpy())

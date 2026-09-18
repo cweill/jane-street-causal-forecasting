@@ -152,3 +152,28 @@ def test_online_seed_ensemble_equals_separate_models(tmp_path):
         axis=0,
     )
     np.testing.assert_allclose(actual, expected, rtol=1e-6, atol=1e-7)
+
+
+def test_day_transform_matches_timestamp_transform_and_has_no_future_dependency(tmp_path):
+    source, prepared, _ = train(tmp_path)
+    features = prepared.features
+    assert hasattr(features, "transform_day"), "bulk causal preprocessing not implemented"
+    public = public_view(source.day(5)).sort("date_id", "time_id", "symbol_id")
+    expected = [
+        features.transform(batch) for batch in public.partition_by("time_id", maintain_order=True)
+    ]
+    actual = features.transform_day(public)
+    for index in range(2):
+        np.testing.assert_array_equal(
+            actual[index], np.concatenate([row[index] for row in expected])
+        )
+    changed = public.with_columns(
+        pl.when(pl.col("time_id") >= 3)
+        .then(999.0)
+        .otherwise(pl.col("feature_00"))
+        .alias("feature_00")
+    )
+    prefix = public.filter(pl.col("time_id") < 3).height
+    np.testing.assert_array_equal(actual[0][:prefix], features.transform_day(changed)[0][:prefix])
+    with pytest.raises(ValueError, match="responder"):
+        features.transform_day(public.with_columns(pl.lit(99.0).alias("responder_6")))

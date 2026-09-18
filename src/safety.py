@@ -19,6 +19,8 @@ CAUSAL_TESTS = [
     "test_patrick_pipeline.py",
     "test_pilot_boundaries.py",
     "test_fixed_protocols.py",
+    "test_preparation_cache.py",
+    "test_rolling_plot.py",
 ]
 
 

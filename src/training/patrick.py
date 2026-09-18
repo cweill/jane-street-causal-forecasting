@@ -27,7 +27,7 @@ class PatrickTrainingConfig:
 @dataclass(frozen=True)
 class PatrickOnlineConfig:
     enabled: bool = False
-    learning_rate: float = 0.0003  # Research assumption, not recovered from the talk.
+    learning_rate: float = 0.0005  # User hypothesis; not recovered from the talk.
     steps: int = 3
     betas: tuple[float, float] = (0.8, 0.95)
     reset_daily_optimizer: bool = False
@@ -36,10 +36,9 @@ class PatrickOnlineConfig:
 
 def pack_panel(public, features, labels=None):
     public = public.sort(KEYS)
-    if public["date_id"].n_unique() != 1 or public.select(KEYS).is_duplicated().any():
-        raise ValueError("panel requires one day and unique keys")
-    times, symbols = sorted(public["time_id"].unique()), sorted(public["symbol_id"].unique())
-    tm, sm = {v: i for i, v in enumerate(times)}, {v: i for i, v in enumerate(symbols)}
+    numeric, categorical = features.transform_day(public)
+    times, ti = np.unique(public["time_id"].to_numpy(), return_inverse=True)
+    symbols, si = np.unique(public["symbol_id"].to_numpy(), return_inverse=True)
     shape = (1, len(times), len(symbols))
     x, cats = np.zeros((*shape, 77), np.float32), np.zeros((*shape, 3), np.int64)
     mask, y, w = (
@@ -47,21 +46,21 @@ def pack_panel(public, features, labels=None):
         np.zeros((*shape, 9), np.float32),
         np.zeros(shape, np.float32),
     )
-    target = (
-        {}
-        if labels is None
-        else {tuple(row[:3]): row[3:] for row in labels.select(KEYS + RESPONDERS).iter_rows()}
-    )
-    keys = []
-    for batch in public.partition_by("time_id", maintain_order=True):
-        numeric, categorical = features.transform(batch)
-        for i, (date, time, symbol, weight) in enumerate(batch.select(*KEYS, "weight").iter_rows()):
-            t, s = tm[time], sm[symbol]
-            x[0, t, s], cats[0, t, s], mask[0, t, s] = numeric[i], categorical[i], True
-            key = (date, time, symbol)
-            if key in target:
-                y[0, t, s], w[0, t, s] = target[key], weight
-            keys.append((key, t, s))
+    x[0, ti, si], cats[0, ti, si], mask[0, ti, si] = numeric, categorical, True
+    if labels is not None:
+        aligned = public.select(*KEYS, "weight").join(
+            labels.select(*KEYS, *RESPONDERS).with_columns(pl.lit(True).alias("labeled")),
+            on=KEYS,
+            how="left",
+            validate="1:1",
+            maintain_order="left",
+        )
+        y[0, ti, si] = aligned.select(RESPONDERS).fill_null(0).to_numpy()
+        w[0, ti, si] = aligned["weight"].to_numpy() * aligned["labeled"].fill_null(False).to_numpy()
+    keys = [
+        (tuple(key), int(t), int(symbol))
+        for key, t, symbol in zip(public.select(KEYS).iter_rows(), ti, si, strict=True)
+    ]
     return (x, cats, mask, y, w), keys
 
 
@@ -165,7 +164,8 @@ class PatrickPredictor:
             or len({id(m) for m in models}) != len(models)
         ):
             raise ValueError("distinct models and one seed per model required")
-        self._states = [{} for _ in models]
+        self._states = [None for _ in models]
+        self._symbol_slots = {}
         self._optimizers = [None for _ in models]
         self._day, self._last_key, self._cache = None, None, []
         self.update_log = []
@@ -233,27 +233,31 @@ class PatrickPredictor:
                 raise ValueError("duplicate lag keys")
         if date != self._day:
             self._update(lags, date)
-            self._states, self._cache = [{} for _ in self.models], []
+            self._states, self._cache = [None for _ in self.models], []
+            self._symbol_slots = {}
             self._day = date
         if self.config.enabled:
             self._cache.append(test.clone())
-        x, cats = self.features.transform(test)
+        x, cats = self.features._transform_rows(test)  # Already validated above.
         symbols = test["symbol_id"].to_list()
+        for symbol in symbols:
+            if symbol not in self._symbol_slots:
+                self._symbol_slots[symbol] = len(self._symbol_slots)
         outputs = []
-        for model, states in zip(self.models, self._states, strict=True):
+        for index, (model, states) in enumerate(zip(self.models, self._states, strict=True)):
             device = next(model.parameters()).device
-            hidden = [
-                torch.cat(
-                    [
-                        states[s][i]
-                        if s in states
-                        else torch.zeros(1, 1, block.gru.hidden_size, device=device)
-                        for s in symbols
-                    ],
+            slots = torch.tensor([self._symbol_slots[s] for s in symbols], device=device)
+            shape = (len(model.blocks), len(self._symbol_slots), model.blocks[0].gru.hidden_size)
+            if states is None:
+                states = torch.zeros(shape, device=device)
+            elif states.shape[1] < shape[1]:
+                states = torch.cat(
+                    [states, states.new_zeros(shape[0], shape[1] - states.shape[1], shape[2])],
                     dim=1,
                 )
-                for i, block in enumerate(model.blocks)
-            ]
+            # One gather/scatter for the entire layer/symbol bank. Missing symbols
+            # retain their columns; newly observed symbols receive zero state.
+            hidden = [h.unsqueeze(0) for h in states.index_select(1, slots).unbind(0)]
             model.eval()
             with torch.no_grad():
                 prediction, new = model(
@@ -262,8 +266,8 @@ class PatrickPredictor:
                     torch.ones(1, 1, len(symbols), device=device, dtype=torch.bool),
                     hidden,
                 )
-            for i, symbol in enumerate(symbols):
-                states[symbol] = [state[:, i : i + 1].detach().clone() for state in new]
+            states.index_copy_(1, slots, torch.cat(new, dim=0))
+            self._states[index] = states
             outputs.append(prediction[0, 0, :, 6].cpu().numpy())
         self._last_key = (date, time)
         return original_rows.with_columns(

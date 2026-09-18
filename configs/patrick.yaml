@@ -30,7 +30,7 @@ training:
   gradient_clip: 1.0
 online:
   enabled: true
-  learning_rate: 0.0003
+  learning_rate: 0.0005
   steps: 3
   betas: [0.8, 0.95]
   reset_daily_optimizer: false

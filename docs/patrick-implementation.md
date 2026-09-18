@@ -38,7 +38,7 @@ temporal folds, output validation, and run artifact writing are shared with Grig
 | Target order | responder_0 through responder_8; main output index 6 |
 | Detached loss balancing | Weighted SSE / weighted target energy per target, divided by its detached ratio with floor 1e-8; zero-energy targets skipped |
 | Sample weighting | Multiply the normalized daily loss by `(200+d)/(200+max_train_date)` and optional ×1.5 for 968 distinct timestamps |
-| Online learning rate | 0.0003, an explicit research setting, not recovered from the source |
+| Online learning rate | 0.0005, the user’s hypothesis for the plot reproduction; not source-verified. The earlier pilot used 0.0003. |
 | Online optimizer lifetime | New Adam for online learning, persistent across days by default; daily reset independently configurable |
 | Online target set | Same enabled responder targets/loss as offline; all nine released responders when auxiliary supervision is on |
 | Epoch count, seed count | One fixed epoch and one seed by default; not the author's final training budget |
