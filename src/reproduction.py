@@ -93,6 +93,7 @@ def run_online_comparison(
                 prepared.scaler,
                 config.online,
                 [config.members[0][1]],
+                stacked_inference=config.inference.stacked_ensemble,
             )
             staged.rename(checkpoint)
         write_json(output / "training_history.json", history)

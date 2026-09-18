@@ -53,6 +53,7 @@ def save_replay_checkpoint(predictor, path, *, signature, row_offset):
             predictor.scaler,
             predictor.config,
             predictor.seeds,
+            stacked_inference=getattr(predictor, "stacked_inference", False),
         )
         atomic_torch_save(
             [None if o is None else o.state_dict() for o in predictor._optimizers],

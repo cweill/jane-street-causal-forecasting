@@ -37,7 +37,7 @@ def sha256_file(path):
     return digest.hexdigest()
 
 
-def save_predictor(path, models, features, scaler, online, seeds):
+def save_predictor(path, models, features, scaler, online, seeds, *, stacked_inference=False):
     """Save the initial inference state BEFORE validation updates occur."""
     path = Path(path)
     path.mkdir(parents=True, exist_ok=False)
@@ -55,6 +55,7 @@ def save_predictor(path, models, features, scaler, online, seeds):
                 "feature_state": features.state_dict(),
                 "online": asdict(online),
                 "seeds": list(seeds),
+                "stacked_inference": stacked_inference,
                 "weights_sha256": sha256_file(path / "weights.pt"),
                 "note": "Initial replay checkpoint; online optimizer/cache are not resumed.",
             },
@@ -99,7 +100,11 @@ def load_predictor(path, device="cpu", *, reset_clock=False):
             model.load_state_dict(state)
             models.append(model.eval())
         return PatrickPredictor(
-            models, features, PatrickOnlineConfig(**metadata["online"]), metadata["seeds"]
+            models,
+            features,
+            PatrickOnlineConfig(**metadata["online"]),
+            metadata["seeds"],
+            stacked_inference=metadata.get("stacked_inference", False),
         )
     features = FeaturePipeline(FeatureConfig(**metadata["features"]))
     if features.names != metadata["feature_names"]:

@@ -234,7 +234,9 @@ def train_model(
 
 
 class PatrickPredictor:
-    def __init__(self, models, features, config=None, seeds=None):
+    def __init__(self, models, features, config=None, seeds=None, *, stacked_inference=False):
+        if type(stacked_inference) is not bool:
+            raise ValueError("stacked inference switch must be boolean")
         self.models, self.features, self.scaler = models, features, features.scaler
         self.config = PatrickOnlineConfig() if config is None else config
         self.seeds = tuple(range(len(models))) if seeds is None else tuple(seeds)
@@ -250,6 +252,9 @@ class PatrickPredictor:
         self._day, self._last_key, self._cache = None, None, []
         self._resume_after_day = None
         self.fast_inference = False
+        self.stacked_inference = stacked_inference
+        self._stacked_engine = None
+        self._stacked_states = None
         self.update_log = []
 
     def _update(self, lags, date):
@@ -322,8 +327,12 @@ class PatrickPredictor:
             if lags.select(KEYS).is_duplicated().any():
                 raise ValueError("duplicate lag keys")
         if date != self._day:
+            before = len(self.update_log)
             self._update(lags, date)
+            if len(self.update_log) != before:
+                self._stacked_engine = None  # Refresh from the newly updated individual models.
             self._states, self._cache = [None for _ in self.models], []
+            self._stacked_states = None
             self._symbol_slots = {}
             self._day = date
         if self.config.enabled:
@@ -333,6 +342,13 @@ class PatrickPredictor:
         for symbol in symbols:
             if symbol not in self._symbol_slots:
                 self._symbol_slots[symbol] = len(self._symbol_slots)
+        if self.stacked_inference:
+            predictions = self._predict_stacked(x, cats, symbols)
+            self._last_key = (date, time)
+            return original_rows.with_columns(
+                pl.Series("responder_6", predictions[np.argsort(order)])
+            )
+        self._stacked_states = None  # The loop may grow or modify the per-model state banks.
         outputs = []
         for index, (model, states) in enumerate(zip(self.models, self._states, strict=True)):
             device = next(model.parameters()).device
@@ -368,3 +384,35 @@ class PatrickPredictor:
         return original_rows.with_columns(
             pl.Series("responder_6", np.mean(outputs, axis=0)[np.argsort(order)])
         )
+
+    @torch.no_grad()
+    def _predict_stacked(self, numeric, categories, symbols):
+        from src.models.patrick_ensemble import StackedPatrick
+
+        if self._stacked_engine is None:
+            self._stacked_engine = StackedPatrick(self.models)
+        device = next(self.models[0].parameters()).device
+        slots = torch.tensor([self._symbol_slots[s] for s in symbols], device=device)
+        layers = len(self.models[0].blocks)
+        hidden = self.models[0].blocks[0].gru.hidden_size
+        shape = (len(self.models), layers, len(self._symbol_slots), hidden)
+        states = self._stacked_states
+        if states is None:
+            if self._states[0] is None:
+                states = torch.zeros(shape, device=device)
+            else:
+                states = torch.stack(self._states)
+        if states.shape[2] < shape[2]:
+            states = torch.cat(
+                [states, states.new_zeros(shape[0], layers, shape[2] - states.shape[2], hidden)],
+                dim=2,
+            )
+        prediction, new = self._stacked_engine.forward_step(
+            torch.as_tensor(numeric, device=device),
+            torch.as_tensor(categories, device=device),
+            states.index_select(2, slots),
+        )
+        states.index_copy_(2, slots, new)
+        self._stacked_states = states
+        self._states = list(states.unbind(0))  # Views keep the loop fallback synchronized.
+        return np.mean(prediction[..., 6].cpu().numpy(), axis=0)

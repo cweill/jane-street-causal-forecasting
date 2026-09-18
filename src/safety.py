@@ -24,6 +24,7 @@ CAUSAL_TESTS = [
     "test_resume.py",
     "test_replay_acceleration.py",
     "test_parallel_replay.py",
+    "test_stacked_ensemble.py",
 ]
 
 

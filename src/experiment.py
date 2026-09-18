@@ -124,6 +124,9 @@ def _run_verified(source, config, output, gate, *, cache_root=None):
             prepared.scaler,
             config.online,
             seeds,
+            stacked_inference=getattr(
+                getattr(config, "inference", None), "stacked_ensemble", False
+            ),
         )
         # Load the saved checkpoint for replay; verifies artifact completeness and isolates state.
         predictor = load_predictor(directory / "checkpoint", config.training.device)

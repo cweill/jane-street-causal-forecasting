@@ -9,6 +9,11 @@ from src.training.patrick import PatrickOnlineConfig, PatrickTrainingConfig
 
 
 @dataclass(frozen=True)
+class PatrickInferenceConfig:
+    stacked_ensemble: bool = False
+
+
+@dataclass(frozen=True)
 class PatrickConfig:
     method: str = "patrick"
     name: str = "patrick_reconstruction"
@@ -16,6 +21,7 @@ class PatrickConfig:
     model: PatrickModelConfig = field(default_factory=PatrickModelConfig)
     training: PatrickTrainingConfig = field(default_factory=PatrickTrainingConfig)
     online: PatrickOnlineConfig = field(default_factory=PatrickOnlineConfig)
+    inference: PatrickInferenceConfig = field(default_factory=PatrickInferenceConfig)
     ensemble: EnsembleConfig = field(
         default_factory=lambda: EnsembleConfig(architectures=("patrick",))
     )
@@ -50,6 +56,7 @@ class PatrickConfig:
             self.online.enabled,
             self.online.reset_daily_optimizer,
             self.ensemble.seed_ensembling,
+            self.inference.stacked_ensemble,
         ):
             if type(flag) is not bool:
                 raise ValueError("ablation switches must be booleans")
@@ -70,6 +77,7 @@ def from_dict(raw):
         "model": PatrickModelConfig,
         "training": PatrickTrainingConfig,
         "online": PatrickOnlineConfig,
+        "inference": PatrickInferenceConfig,
         "ensemble": EnsembleConfig,
         "cv": CVConfig,
     }
