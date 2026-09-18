@@ -21,6 +21,7 @@ CAUSAL_TESTS = [
     "test_fixed_protocols.py",
     "test_preparation_cache.py",
     "test_rolling_plot.py",
+    "test_resume.py",
 ]
 
 

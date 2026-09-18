@@ -86,3 +86,32 @@ def test_fixed_development_runner_never_reads_later_days(tmp_path, monkeypatch):
     assert split["validation_dates"] == [4, 5]
     meta = json.loads((tmp_path / "fixed/fold_0/checkpoint/metadata.json").read_text())
     assert meta["feature_state"]["scaler"]["training_dates"] == [0, 1, 2]
+
+
+def test_shared_runner_reuses_preparation_cache_across_runs(tmp_path, monkeypatch):
+    import inspect
+
+    from src.data.loader import ParquetSource
+
+    assert "cache_root" in inspect.signature(run_experiment).parameters, (
+        "runner cache option missing"
+    )
+    path = tmp_path / "data.parquet"
+    panel().write_parquet(path)
+    source = ParquetSource(path)
+    config = tiny_config()
+    config = replace(config, cv=replace(config.cv, min_date=0, gap_days=1, validation_days=2))
+    monkeypatch.setattr("src.experiment.safety_gate", lambda: {"passed": True})
+    first = run_experiment(source, config, tmp_path / "first", cache_root=tmp_path / "cache")
+    day = source.day
+
+    def deny_training_read(date):
+        # Date 3 may still be read as the initial API lag; earlier training dates cannot.
+        assert date >= 3, "cache hit recomputed training preprocessing"
+        return day(date)
+
+    source.day = deny_training_read
+    second = run_experiment(source, config, tmp_path / "second", cache_root=tmp_path / "cache")
+    assert first["pooled_score"] == second["pooled_score"]
+    record = json.loads((tmp_path / "second/fold_0/preparation_cache.json").read_text())
+    assert record["hit"]

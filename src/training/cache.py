@@ -14,6 +14,24 @@ from src.training.patrick import PreparedPatrick, prepare_training
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def parquet_fingerprint(path):
+    """Content identity is independent of the local/Modal parent directory."""
+    path = Path(path)
+    paths = sorted(path.rglob("*.parquet")) if path.is_dir() else [path]
+    if not paths or any(not p.is_file() for p in paths):
+        raise FileNotFoundError(path)
+    files = [
+        {
+            "name": str(p.relative_to(path)) if path.is_dir() else p.name,
+            "sha256": sha256_file(p),
+            "bytes": p.stat().st_size,
+        }
+        for p in paths
+    ]
+    digest = hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
+    return digest, files
+
+
 def preprocessing_fingerprint():
     digest = hashlib.sha256()
     for name in (

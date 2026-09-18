@@ -109,7 +109,16 @@ def loss_for_model(model, prediction, y, w):
     return multitask_loss(prediction, y, w, target_weights, balance=config.balance_losses)
 
 
-def train_model(prepared, model_config, *, training=None, seed=0):
+def train_model(
+    prepared,
+    model_config,
+    *,
+    training=None,
+    seed=0,
+    checkpoint_path=None,
+    checkpoint_every=25,
+    progress=None,
+):
     training = PatrickTrainingConfig() if training is None else training
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
@@ -120,36 +129,92 @@ def train_model(prepared, model_config, *, training=None, seed=0):
         weight_decay=training.weight_decay,
         betas=training.betas,
     )
+    from src.training.checkpoints import atomic_torch_save, training_signature
+
+    if type(checkpoint_every) is not int or checkpoint_every < 1:
+        raise ValueError("positive checkpoint interval required")
+    checkpoint = None if checkpoint_path is None else Path(checkpoint_path)
+    signature = (
+        None if checkpoint is None else training_signature(prepared, model_config, training, seed)
+    )
     rng, history = np.random.default_rng(seed), []
-    for epoch in range(training.epochs):
-        losses = []
+    epoch, position, completed, order, losses = 0, 0, 0, [], []
+    if checkpoint is not None and checkpoint.exists():
+        saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
+        if saved["signature"] != signature:
+            raise ValueError("training checkpoint identity mismatch")
+        model.load_state_dict(saved["model"])
+        optimizer.load_state_dict(saved["optimizer"])
+        epoch, position, completed = saved["epoch"], saved["position"], saved["completed"]
+        order, losses, history = saved["order"], saved["losses"], saved["history"]
+        rng.bit_generator.state = saved["numpy_rng"]
+        torch.set_rng_state(saved["torch_rng"])
+        if training.device == "cuda":
+            torch.cuda.set_rng_state_all(saved["cuda_rng"])
+    while epoch < training.epochs:
+        if not order:
+            order = rng.permutation(prepared.dates).tolist()
+        date = np.int64(order[position])
         model.train()
-        for date in rng.permutation(prepared.dates):
-            x, cats, mask, y, w = [
-                torch.as_tensor(a, device=training.device) for a in prepared.read(int(date))
-            ]
-            optimizer.zero_grad(set_to_none=True)
-            prediction, _ = model(x, cats, mask)
-            loss = loss_for_model(model, prediction, y, w)
-            # Per-day multipliers must be outside the normalized daily loss;
-            # multiplying both R² numerator/denominator would cancel them.
-            importance = (
-                (200 + date) / (200 + max(prepared.dates)) if training.recency_weighting else 1.0
-            )
-            if training.full_length_weighting and x.shape[1] == 968:
-                importance *= 1.5
-            loss = loss * importance
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), training.gradient_clip)
-            optimizer.step()
-            losses.append(loss.item())
-        history.append(
-            {
-                "epoch": epoch + 1,
-                "mean_optimization_loss": float(np.mean(losses)),
-                "note": "Detached loss balancing makes this unsuitable for score/early stopping.",
-            }
+        x, cats, mask, y, w = [
+            torch.as_tensor(a, device=training.device) for a in prepared.read(int(date))
+        ]
+        optimizer.zero_grad(set_to_none=True)
+        prediction, _ = model(x, cats, mask)
+        loss = loss_for_model(model, prediction, y, w)
+        # Keep per-day multipliers outside the normalized loss; inside they cancel.
+        importance = (
+            (200 + date) / (200 + max(prepared.dates)) if training.recency_weighting else 1.0
         )
+        if training.full_length_weighting and x.shape[1] == 968:
+            importance *= 1.5
+        loss = loss * importance
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), training.gradient_clip)
+        optimizer.step()
+        losses.append(loss.item())
+        position += 1
+        completed += 1
+        finished_epoch = position == len(order)
+        if finished_epoch:
+            history.append(
+                {
+                    "epoch": epoch + 1,
+                    "mean_optimization_loss": float(np.mean(losses)),
+                    "note": "Detached loss balancing makes this unsuitable for score/early stopping.",
+                }
+            )
+            epoch += 1
+            position, order, losses = 0, [], []
+        if checkpoint is not None and (finished_epoch or completed % checkpoint_every == 0):
+            atomic_torch_save(
+                {
+                    "signature": signature,
+                    "model": model.state_dict(),
+                    "optimizer": optimizer.state_dict(),
+                    "epoch": epoch,
+                    "position": position,
+                    "completed": completed,
+                    "order": order,
+                    "losses": losses,
+                    "history": history,
+                    "numpy_rng": rng.bit_generator.state,
+                    "torch_rng": torch.get_rng_state(),
+                    "cuda_rng": torch.cuda.get_rng_state_all() if training.device == "cuda" else [],
+                },
+                checkpoint,
+            )
+        if progress is not None:
+            progress(
+                {
+                    "completed_batches": completed,
+                    "total_batches": len(prepared.dates) * training.epochs,
+                    "epochs_completed": epoch,
+                    "checkpoint_written": checkpoint is not None
+                    and (finished_epoch or completed % checkpoint_every == 0),
+                }
+            )
+
     return model.eval(), history
 
 
@@ -168,6 +233,7 @@ class PatrickPredictor:
         self._symbol_slots = {}
         self._optimizers = [None for _ in models]
         self._day, self._last_key, self._cache = None, None, []
+        self._resume_after_day = None
         self.update_log = []
 
     def _update(self, lags, date):
@@ -222,6 +288,10 @@ class PatrickPredictor:
         order = np.argsort(test["symbol_id"].to_numpy(), kind="stable")
         test = test[order]
         date, time = int(test["date_id"][0]), int(test["time_id"][0])
+        if self._resume_after_day is not None:
+            if date <= self._resume_after_day:
+                raise ValueError("replay checkpoint must resume after the saved day boundary")
+            self._resume_after_day = None
         if self._last_key is not None and (date, time) <= self._last_key:
             raise ValueError("predict calls must be strictly chronological")
         if lags is not None:

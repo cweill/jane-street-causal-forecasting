@@ -20,6 +20,8 @@ def main():
         command = sub.add_parser(name)
         command.add_argument("--config", default="configs/baseline.yaml")
         command.add_argument("--output", required=True)
+        if name == "run":
+            command.add_argument("--cache", help="reusable Patrick preparation cache directory")
         if name != "smoke":
             command.add_argument(
                 "--data", required=True, help="train.parquet file or partition directory"
@@ -107,7 +109,9 @@ def main():
     else:
         from src.experiment import run_experiment
 
-        result = run_experiment(source, config, args.output)
+        result = run_experiment(
+            source, config, args.output, cache_root=getattr(args, "cache", None)
+        )
     print(json.dumps(result, indent=2))
 
 

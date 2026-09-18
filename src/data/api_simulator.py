@@ -35,7 +35,12 @@ class ReplayResult:
 
 
 class APISimulator:
-    def __init__(self, source: DaySource, dates, scored_dates=None, timeout_seconds=None):
+    def __init__(
+        self, source: DaySource, dates, scored_dates=None, timeout_seconds=None, row_offset=0
+    ):
+        if type(row_offset) is not int or row_offset < 0:
+            raise ValueError("row offset must be a nonnegative integer")
+        self._row_offset = row_offset
         self._source = source
         self._dates = tuple(int(d) for d in dates)
         if not self._dates or tuple(sorted(set(self._dates))) != self._dates:
@@ -47,7 +52,7 @@ class APISimulator:
 
     def run(self, predict, *, collect_predictions=True, prediction_sink=None):
         metric, outputs = WeightedZeroMeanR2(), []
-        offset, calls, max_seconds = 0, 0, 0.0
+        offset, calls, max_seconds = self._row_offset, 0, 0.0
         for date in self._dates:
             day = self._source.day(date)
             public = test_view(day, offset)

@@ -55,14 +55,21 @@ def source_manifest(source):
     return {"kind": "in_memory", "dates": list(source.dates())}
 
 
-def run_experiment(source, config, output):
+def run_experiment(source, config, output, *, cache_root=None):
     gate = safety_gate()
-    return _run_verified(source, config, output, gate)
+    return _run_verified(source, config, output, gate, cache_root=cache_root)
 
 
-def _run_verified(source, config, output, gate):
+def _run_verified(source, config, output, gate, *, cache_root=None):
     # Validate dates before creating artifacts or reading any feature/target rows.
     folds = configured_folds(source.dates(), config.cv)
+    dataset_digest = None
+    if cache_root is not None:
+        from src.training.cache import parquet_fingerprint
+
+        if getattr(config, "method", None) != "patrick" or not hasattr(source, "path"):
+            raise ValueError("persistent preparation cache requires Patrick and parquet input")
+        dataset_digest, _ = parquet_fingerprint(source.path)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     write_json(output / "safety_gate.json", gate)
@@ -90,7 +97,17 @@ def _run_verified(source, config, output, gate):
             flush=True,
         )
         training_source = RestrictedDateSource(source, fold.train_dates)
-        prepared = prepare(config, training_source, fold.train_dates, directory / "training_cache")
+        if cache_root is None:
+            prepared = prepare(
+                config, training_source, fold.train_dates, directory / "training_cache"
+            )
+        else:
+            from src.training.cache import prepare_cached
+
+            prepared, cache_record = prepare_cached(
+                training_source, fold.train_dates, config.features, cache_root, dataset_digest
+            )
+            write_json(directory / "preparation_cache.json", cache_record)
         models, seeds, histories = [], [], []
         for model_config, seed in config.members:
             label = getattr(model_config, "architecture", "patrick")
