@@ -1,0 +1,156 @@
+{
+  "launch": {
+    "benchmark_id": "benchmark-20260918T214616Z",
+    "call_id": "fc-01M2V7R27JHSCM04W9Q59WS09K",
+    "source_run": "20260918T200909Z-2b3a45f0",
+    "implementation_commit": "0a1dd1c"
+  },
+  "benchmark": {
+    "status": "passed",
+    "source_run": "20260918T200909Z-2b3a45f0",
+    "dates": [
+      1380,
+      1381,
+      1382
+    ],
+    "initial_checkpoint_sha256": "85e6369bafa7ae939284b6a44ced9e7b25027a465b127bfc0d148679db8b88fa",
+    "gpu": "NVIDIA L4",
+    "safety_gate": {
+      "passed": true,
+      "code_and_tests_sha256": "afaf79931840680103c6d624ce067621cc2ba7c9ca47fb813de083341cbf2035",
+      "command": [
+        "/.uv/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "/project/tests/test_metric.py",
+        "/project/tests/test_lag_visibility.py",
+        "/project/tests/test_no_future_leakage.py",
+        "/project/tests/test_features.py",
+        "/project/tests/test_model.py",
+        "/project/tests/test_offline_boundaries.py",
+        "/project/tests/test_online_update_timing.py",
+        "/project/tests/test_gateway_parity.py",
+        "/project/tests/test_patrick_model.py",
+        "/project/tests/test_patrick_pipeline.py",
+        "/project/tests/test_pilot_boundaries.py",
+        "/project/tests/test_fixed_protocols.py",
+        "/project/tests/test_preparation_cache.py",
+        "/project/tests/test_rolling_plot.py",
+        "/project/tests/test_resume.py",
+        "/project/tests/test_replay_acceleration.py"
+      ],
+      "output": "........................................................................ [ 87%]\n..........                                                               [100%]\n82 passed in 19.67s\n"
+    },
+    "results": {
+      "offline": {
+        "baseline_seconds": 59.500363815000014,
+        "optimized_seconds": 52.841287290000025,
+        "speedup": 1.126020331193941,
+        "baseline_daily": [
+          {
+            "date": 1380,
+            "seconds": 20.760687555999993,
+            "sse": 76861.5465613656,
+            "denominator": 78127.49343831804,
+            "calls": 968
+          },
+          {
+            "date": 1381,
+            "seconds": 19.123142513000005,
+            "sse": 139026.55464687478,
+            "denominator": 146677.25160111167,
+            "calls": 968
+          },
+          {
+            "date": 1382,
+            "seconds": 19.615716823,
+            "sse": 66678.10661003094,
+            "denominator": 67281.6537002843,
+            "calls": 968
+          }
+        ],
+        "optimized_daily": [
+          {
+            "date": 1380,
+            "seconds": 17.937530724,
+            "sse": 76861.5465613656,
+            "denominator": 78127.49343831804,
+            "calls": 968
+          },
+          {
+            "date": 1381,
+            "seconds": 17.519975791999997,
+            "sse": 139026.55464687478,
+            "denominator": 146677.25160111167,
+            "calls": 968
+          },
+          {
+            "date": 1382,
+            "seconds": 17.383246517999993,
+            "sse": 66678.10661003094,
+            "denominator": 67281.6537002843,
+            "calls": 968
+          }
+        ],
+        "predictions_scores_weights_optimizer_identical": true,
+        "final_weights_sha256": "1c51872aecac58570a51f9bbe1dfe5c30c5796ff5a6a503a7812906489fc9180"
+      },
+      "online": {
+        "baseline_seconds": 59.927887067,
+        "optimized_seconds": 58.85996399000001,
+        "speedup": 1.0181434544741044,
+        "baseline_daily": [
+          {
+            "date": 1380,
+            "seconds": 18.820583088999996,
+            "sse": 76861.5465613656,
+            "denominator": 78127.49343831804,
+            "calls": 968
+          },
+          {
+            "date": 1381,
+            "seconds": 20.71383559099999,
+            "sse": 139343.4982737311,
+            "denominator": 146677.25160111167,
+            "calls": 968
+          },
+          {
+            "date": 1382,
+            "seconds": 20.39277041699998,
+            "sse": 67905.02536678784,
+            "denominator": 67281.6537002843,
+            "calls": 968
+          }
+        ],
+        "optimized_daily": [
+          {
+            "date": 1380,
+            "seconds": 19.166126503000015,
+            "sse": 76861.5465613656,
+            "denominator": 78127.49343831804,
+            "calls": 968
+          },
+          {
+            "date": 1381,
+            "seconds": 20.433918621999965,
+            "sse": 139343.4982737311,
+            "denominator": 146677.25160111167,
+            "calls": 968
+          },
+          {
+            "date": 1382,
+            "seconds": 19.259254698999996,
+            "sse": 67905.02536678784,
+            "denominator": 67281.6537002843,
+            "calls": 968
+          }
+        ],
+        "predictions_scores_weights_optimizer_identical": true,
+        "final_weights_sha256": "ebb38f0cf6cf7c3b8ced16873f8ae619d680cf001e30d6476ff14f484c16c9fd",
+        "future_label_perturbation_identical": true
+      }
+    },
+    "note": "Implementation benchmark only; no hyperparameter or epoch selection."
+  }
+}
