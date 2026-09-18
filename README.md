@@ -21,6 +21,8 @@ The [Patrick plot runbook](docs/patrick-run-safety.md) records the cache benchma
 CUDA interruption/recovery rehearsal, fixed run settings, and persistent Modal launcher.
 The [W&B monitor](docs/wandb-monitoring.md) observes the running Patrick job's saved
 losses and evaluations through a separate CPU process with read-only data access.
+Patrick's optional [stacked ensemble inference](docs/stacked-ensemble-inference.md)
+batches model weights and GRU states across seeds while retaining separate online optimizers.
 
 ## Run locally
 
