@@ -1,5 +1,6 @@
 """Read one chronological day at a time, including partitioned competition parquet."""
 
+from collections import OrderedDict
 from pathlib import Path
 from typing import Protocol
 
@@ -11,6 +12,28 @@ from src.data.schema import validate_day
 class DaySource(Protocol):
     def dates(self) -> tuple[int, ...]: ...
     def day(self, date: int) -> pl.DataFrame: ...
+
+
+class CachedDaySource:
+    """Evaluator-owned cache of immutable days; never handed to a predictor."""
+
+    def __init__(self, source, capacity=2):
+        if type(capacity) is not int or capacity < 1:
+            raise ValueError("positive day cache capacity required")
+        self._source, self._capacity = source, capacity
+        self._dates = source.dates()
+        self._cache = OrderedDict()
+
+    def dates(self):
+        return self._dates
+
+    def day(self, date):
+        if date not in self._cache:
+            self._cache[date] = self._source.day(date).clone()
+        self._cache.move_to_end(date)
+        while len(self._cache) > self._capacity:
+            self._cache.popitem(last=False)
+        return self._cache[date].clone()
 
 
 class RestrictedDateSource:

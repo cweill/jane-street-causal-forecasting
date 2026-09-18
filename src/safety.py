@@ -22,6 +22,7 @@ CAUSAL_TESTS = [
     "test_preparation_cache.py",
     "test_rolling_plot.py",
     "test_resume.py",
+    "test_replay_acceleration.py",
 ]
 
 

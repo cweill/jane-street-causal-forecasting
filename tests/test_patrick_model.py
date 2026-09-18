@@ -80,3 +80,18 @@ def test_multitask_loss_gradient_and_zero_energy_handling():
     torch.testing.assert_close(prediction.grad, torch.full_like(prediction, -2 / 9))
     zero = api.multitask_loss(prediction, torch.zeros_like(target), weights, (1,) * 9)
     assert zero.item() == 0 and torch.isfinite(zero)
+
+
+def test_streaming_fast_path_matches_generic_predictions_and_hidden_states():
+    model, x, categories, mask = setup_model()
+    assert hasattr(model, "forward_step"), "streaming fast path missing"
+    normal, fast = None, None
+    with torch.no_grad():
+        for t in range(x.shape[1]):
+            expected, normal = model(
+                x[:, t : t + 1], categories[:, t : t + 1], mask[:, t : t + 1], normal
+            )
+            actual, fast = model.forward_step(x[:, t : t + 1], categories[:, t : t + 1], fast)
+            torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+            for a, b in zip(normal, fast, strict=True):
+                torch.testing.assert_close(a, b, rtol=0, atol=0)

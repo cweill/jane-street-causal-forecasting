@@ -68,7 +68,7 @@ class AxialGRUBlock(nn.Module):
             nn.Dropout(config.dropout),
         )
 
-    def forward(self, x, mask, state=None):
+    def forward(self, x, mask, state=None, *, all_present=False):
         b, t, a, d = x.shape
         z = self.norm1(x).reshape(b * t, a, d)
         padding = ~mask.reshape(b * t, a)
@@ -80,7 +80,7 @@ class AxialGRUBlock(nn.Module):
         x = torch.where(mask[..., None], x + z.reshape(b, t, a, d), 0.0)
         z = self.norm2(x).permute(0, 2, 1, 3).reshape(b * a, t, d)
         active = mask.permute(0, 2, 1).reshape(b * a, t)
-        if bool(active.all()):
+        if all_present or bool(active.all()):
             z, state = self.gru(z, state)
         else:
             state = z.new_zeros(1, b * a, self.gru.hidden_size) if state is None else state
@@ -114,6 +114,20 @@ class PatrickYam(nn.Module):
         self.head = nn.Sequential(*head)
 
     def forward(self, x, categories, mask, state=None):
+        return self._forward(x, categories, mask, state, all_present=False)
+
+    def forward_step(self, x, categories, state=None):
+        """One public timestamp, containing only currently present symbols.
+
+        Constructing the mask here avoids eight GPU-to-host mask checks. Missing
+        symbol state is handled by PatrickPredictor's external symbol bank.
+        """
+        if x.ndim != 4 or x.shape[1] != 1:
+            raise ValueError("streaming inference requires one timestamp")
+        mask = torch.ones(x.shape[:-1], device=x.device, dtype=torch.bool)
+        return self._forward(x, categories, mask, state, all_present=True)
+
+    def _forward(self, x, categories, mask, state, *, all_present):
         if (
             x.ndim != 4
             or x.shape[-1] != 77
@@ -136,7 +150,7 @@ class PatrickYam(nn.Module):
         old_states = [None] * len(self.blocks) if state is None else state
         states = []
         for block, old in zip(self.blocks, old_states, strict=True):
-            x, new = block(x, mask, old)
+            x, new = block(x, mask, old, all_present=all_present)
             states.append(new)
         return torch.where(mask[..., None], self.head(self.post_norm(x)), 0.0), states
 

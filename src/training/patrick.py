@@ -249,6 +249,7 @@ class PatrickPredictor:
         self._optimizers = [None for _ in models]
         self._day, self._last_key, self._cache = None, None, []
         self._resume_after_day = None
+        self.fast_inference = False
         self.update_log = []
 
     def _update(self, lags, date):
@@ -349,12 +350,17 @@ class PatrickPredictor:
             hidden = [h.unsqueeze(0) for h in states.index_select(1, slots).unbind(0)]
             model.eval()
             with torch.no_grad():
-                prediction, new = model(
-                    torch.as_tensor(x[None, None], device=device),
-                    torch.as_tensor(cats[None, None], device=device),
-                    torch.ones(1, 1, len(symbols), device=device, dtype=torch.bool),
-                    hidden,
-                )
+                numeric = torch.as_tensor(x[None, None], device=device)
+                categorical = torch.as_tensor(cats[None, None], device=device)
+                if self.fast_inference:
+                    prediction, new = model.forward_step(numeric, categorical, hidden)
+                else:
+                    prediction, new = model(
+                        numeric,
+                        categorical,
+                        torch.ones(1, 1, len(symbols), device=device, dtype=torch.bool),
+                        hidden,
+                    )
             states.index_copy_(1, slots, torch.cat(new, dim=0))
             self._states[index] = states
             outputs.append(prediction[0, 0, :, 6].cpu().numpy())

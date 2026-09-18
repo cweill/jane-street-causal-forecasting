@@ -36,7 +36,14 @@ class ReplayResult:
 
 class APISimulator:
     def __init__(
-        self, source: DaySource, dates, scored_dates=None, timeout_seconds=None, row_offset=0
+        self,
+        source: DaySource,
+        dates,
+        scored_dates=None,
+        timeout_seconds=None,
+        row_offset=0,
+        *,
+        prepartition_truth=False,
     ):
         if type(row_offset) is not int or row_offset < 0:
             raise ValueError("row offset must be a nonnegative integer")
@@ -49,6 +56,7 @@ class APISimulator:
             raise ValueError("requested replay date is absent")
         self._scored_dates = None if scored_dates is None else set(scored_dates)
         self.timeout_seconds = timeout_seconds
+        self.prepartition_truth = prepartition_truth
 
     def run(self, predict, *, collect_predictions=True, prediction_sink=None):
         metric, outputs = WeightedZeroMeanR2(), []
@@ -59,9 +67,24 @@ class APISimulator:
             if self._scored_dates is not None and date not in self._scored_dates:
                 public = public.with_columns(pl.lit(False).alias("is_scored"))
             lags = previous_day_lags(self._source.day(date - 1), date)
+            # Private evaluator truth stays outside predict(); only its lookup changes.
+            truth_by_time = (
+                {
+                    int(part["time_id"][0]): part["responder_6"].to_numpy().copy()
+                    for part in day.select("time_id", "responder_6").partition_by(
+                        "time_id", maintain_order=True
+                    )
+                }
+                if self.prepartition_truth
+                else None
+            )
             for test in public.partition_by("time_id", maintain_order=True):
                 time = int(test["time_id"][0])
-                truth = day.filter(pl.col("time_id") == time)["responder_6"].to_numpy().copy()
+                truth = (
+                    truth_by_time[time]
+                    if truth_by_time is not None
+                    else day.filter(pl.col("time_id") == time)["responder_6"].to_numpy().copy()
+                )
                 # Capture evaluator-owned metadata before calling arbitrary predictor code.
                 row_ids = test["row_id"].to_numpy().copy()
                 weights = test["weight"].to_numpy().copy()
