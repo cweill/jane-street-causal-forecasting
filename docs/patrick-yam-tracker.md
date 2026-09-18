@@ -1,8 +1,10 @@
 # Patrick Yam reproduction tracker
 
 Updated: 2026-09-17. Status: reconstruction implemented; local causal and integration tests pass.
-The [bounded L4 pilot](patrick-pilot-report.md) also passed; predictive comparison
-and recovery of unresolved source details remain outstanding.
+The [bounded L4 pilot](patrick-pilot-report.md), cache/inference equivalence benchmark,
+and CUDA interruption/recovery rehearsal passed. The
+[plot runbook](patrick-run-safety.md) pins the reconstruction settings and recovery
+procedure. Full-period predictive comparison and unresolved source details remain outstanding.
 
 This is the entry point for the supplied transcript and ten screenshots. Values below
 are author-reported or transcribed unless marked as derived. None of the reported
@@ -144,4 +146,6 @@ rows, 1,699 dates, ten partitions. See [verification record](verification.md) an
 `artifacts/competition-data.json`. The official gateway matched all 15 synthetic
 reference batches. The existing Grigoreva implementation has now completed a
 [bounded real-data CUDA pilot](real-data-pilot-report.md), including online-update
-and future-label checks. No Patrick Yam model or full-training comparison exists yet.
+and future-label checks. Patrick's full-size architecture also passed its bounded
+CUDA pilot and recovery rehearsal. The full-period plot uses the pinned
+`configs/patrick_ol.yaml`; its settings are frozen before replay.

@@ -4,9 +4,9 @@ Verified locally on 2026-09-17 with Python 3.12.12 on macOS ARM64, using `uv.loc
 
 | Check | Result |
 |---|---|
-| `python -m pytest -q` | 61 passed |
+| `python -m pytest -q` | 90 passed |
 | `ruff check .` | Passed |
-| `ruff format --check .` | 56 files formatted correctly |
+| `ruff format --check .` | 70 files formatted correctly |
 | Actual distributed gateway batching method | All 15 synthetic batches matched |
 | Deliberate leakage mutations in disposable copies | All 5 detected by failing tests |
 | Six-member Grigoreva and single-seed Patrick online synthetic CLI smoke | Both temporal folds completed for each |
@@ -85,3 +85,18 @@ perturbation checks. Measured work took 450.81 seconds with 4.29 GiB peak PyTorc
 CUDA allocation. Independent score recomputation agreed within 7e-16. The
 archive was verified and downloaded; Modal reported the App stopped with zero tasks.
 The final holdout remains unused.
+
+## Patrick cache and recovery checks (later on 2026-09-17)
+
+The [runbook and machine-readable evidence](patrick-run-safety.md) record a
+full-size L4 optimization benchmark and a separate CUDA interruption rehearsal.
+Optimized preparation/replay matched original arrays, predictions and final weights
+exactly. Restored training matched uninterrupted weights and loss history, including
+dropout RNG state; restored online replay matched predictions and weights at lr=5e-4.
+The recovery rehearsal's remote causal gate passed 76 tests. Subsequent local tests
+cover non-finite losses/gradients without overwriting a healthy checkpoint. The full
+local suite now passes 90 tests, and all five deliberate leakage mutations were detected.
+
+`configs/patrick_ol.yaml` explicitly uses dates 1380–1698 for the requested plot,
+with 1500–1698 as its primary scored interval. This reconstructs the author's
+experiment under documented assumptions; it is not a fresh holdout for later tuning.

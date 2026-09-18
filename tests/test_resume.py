@@ -112,3 +112,61 @@ def test_day_at_a_time_replay_keeps_global_api_row_ids(panel):
         offset += part.height
         parts.append(part)
     assert pl.concat(parts).equals(expected)
+
+
+@pytest.mark.parametrize("bad_gradient", [False, True])
+def test_nonfinite_training_keeps_last_healthy_checkpoint(tmp_path, monkeypatch, bad_gradient):
+    import src.training.patrick as module
+
+    config = tiny_config()
+    prepared = prepare_training(FrameSource(panel()), (0, 1, 2), config.features, tmp_path / "data")
+    checkpoint = tmp_path / "training.pt"
+
+    def interrupt(record):
+        if record["completed_batches"] == 1:
+            raise DeliberateInterruption()
+
+    with pytest.raises(DeliberateInterruption):
+        train_model(
+            prepared,
+            config.model,
+            training=config.training,
+            checkpoint_path=checkpoint,
+            checkpoint_every=1,
+            progress=interrupt,
+        )
+    healthy = checkpoint.read_bytes()
+
+    def corrupt_loss(model, prediction, y, w):
+        if bad_gradient:
+            prediction.register_hook(lambda gradient: torch.full_like(gradient, float("nan")))
+            return prediction.sum()
+        return prediction.sum() * float("nan")
+
+    monkeypatch.setattr(module, "loss_for_model", corrupt_loss)
+    with pytest.raises((FloatingPointError, RuntimeError), match="non.finite"):
+        train_model(
+            prepared,
+            config.model,
+            training=config.training,
+            checkpoint_path=checkpoint,
+            checkpoint_every=1,
+        )
+    assert checkpoint.read_bytes() == healthy
+
+
+def test_nonfinite_online_update_stops_before_mutating_weights(tmp_path, monkeypatch):
+    import src.training.patrick as module
+
+    source, _, _ = train(tmp_path)
+    predictor = load_predictor(tmp_path / "model")
+    APISimulator(source, [3]).run(predictor.predict)
+    weights = {name: value.clone() for name, value in predictor.models[0].state_dict().items()}
+    monkeypatch.setattr(
+        module, "loss_for_model", lambda model, prediction, y, w: prediction.sum() * float("nan")
+    )
+    with pytest.raises(FloatingPointError, match="non.finite"):
+        APISimulator(source, [4]).run(predictor.predict)
+    for name, value in weights.items():
+        torch.testing.assert_close(predictor.models[0].state_dict()[name], value, rtol=0, atol=0)
+    assert predictor.update_log == []

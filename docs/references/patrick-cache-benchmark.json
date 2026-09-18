@@ -1,0 +1,47 @@
+{
+  "cold_preparation_seconds": 1.4402714140000015,
+  "gpu": "NVIDIA L4",
+  "prepared_arrays_identical": true,
+  "replays": {
+    "offline": {
+      "baseline_seconds": 137.71637066699998,
+      "predictions_and_final_weights_identical": true,
+      "seconds": 112.074471915,
+      "speedup": 1.2287933934807866
+    },
+    "online": {
+      "baseline_seconds": 151.786076169,
+      "predictions_and_final_weights_identical": true,
+      "seconds": 111.374778155,
+      "speedup": 1.3628406600079572
+    }
+  },
+  "safety_gate": {
+    "code_and_tests_sha256": "7a5b629953cf39516194ea6ff21b6b00ec9b5d8c1173a4b5332a096d6b8d23f8",
+    "command": [
+      "/.uv/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "/project/tests/test_metric.py",
+      "/project/tests/test_lag_visibility.py",
+      "/project/tests/test_no_future_leakage.py",
+      "/project/tests/test_features.py",
+      "/project/tests/test_model.py",
+      "/project/tests/test_offline_boundaries.py",
+      "/project/tests/test_online_update_timing.py",
+      "/project/tests/test_gateway_parity.py",
+      "/project/tests/test_patrick_model.py",
+      "/project/tests/test_patrick_pipeline.py",
+      "/project/tests/test_pilot_boundaries.py",
+      "/project/tests/test_fixed_protocols.py",
+      "/project/tests/test_preparation_cache.py",
+      "/project/tests/test_rolling_plot.py"
+    ],
+    "output": "........................................................................ [ 98%]\n.                                                                        [100%]\n73 passed in 17.98s\n",
+    "passed": true
+  },
+  "source_run": "20260917T232828Z-0b458313",
+  "status": "passed",
+  "warm_cache_seconds": 0.1495503900000017
+}

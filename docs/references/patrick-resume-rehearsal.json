@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "gpu": "NVIDIA L4",
+  "training_weights_and_history_identical": true,
+  "resumed_online_predictions_and_weights_identical": true,
+  "online_learning_rate": 0.0005,
+  "training_stress_dropout": 0.1,
+  "seconds": 108.194731977,
+  "safety_gate": {
+    "passed": true,
+    "code_and_tests_sha256": "c46ac7a56b5c3c286545b3edd5db50691459446a4df776f8a57e7f61a121e5d2",
+    "command": [
+      "/.uv/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "/project/tests/test_metric.py",
+      "/project/tests/test_lag_visibility.py",
+      "/project/tests/test_no_future_leakage.py",
+      "/project/tests/test_features.py",
+      "/project/tests/test_model.py",
+      "/project/tests/test_offline_boundaries.py",
+      "/project/tests/test_online_update_timing.py",
+      "/project/tests/test_gateway_parity.py",
+      "/project/tests/test_patrick_model.py",
+      "/project/tests/test_patrick_pipeline.py",
+      "/project/tests/test_pilot_boundaries.py",
+      "/project/tests/test_fixed_protocols.py",
+      "/project/tests/test_preparation_cache.py",
+      "/project/tests/test_rolling_plot.py",
+      "/project/tests/test_resume.py"
+    ],
+    "output": "........................................................................ [ 94%]\n....                                                                     [100%]\n76 passed in 17.45s\n"
+  }
+}

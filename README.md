@@ -17,6 +17,8 @@ checks on dates 700–708 and downloads its checkpoints, audits, and runtime rep
 The [first L4 pilot passed](docs/real-data-pilot-report.md), including a real-data
 future-responder perturbation check. The
 [Patrick L4 pilot also passed](docs/patrick-pilot-report.md) on the identical slice.
+The [Patrick plot runbook](docs/patrick-run-safety.md) records the cache benchmark,
+CUDA interruption/recovery rehearsal, fixed run settings, and detached Modal launcher.
 
 ## Run locally
 
@@ -141,8 +143,10 @@ input file metadata, exact date splits, daily training losses, initial checkpoin
 prediction parquet files, pooled scores, and an online-update audit. Load a fresh callback
 using `src.artifacts.load_predictor(path).predict`; it accepts the Kaggle-style Polars
 signature. Checkpoints contain inference initialization state, including training feature
-history, and are saved before validation adaptation. They are not midstream restart or
-optimizer-resume checkpoints. For a deployment stream whose dates restart at zero, use
+history, and are saved before validation adaptation. Those initial checkpoints do not
+contain optimizer state. The Patrick plot runner separately saves resumable training
+and day-boundary replay checkpoints, including optimizer state; see the runbook above.
+For a deployment stream whose dates restart at zero, use
 `load_predictor(path, reset_clock=True).predict` to reset the chronological cursor while
 retaining rolling history. CV keeps the original historical dates and requires no rebasing.
 

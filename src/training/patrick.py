@@ -169,8 +169,12 @@ def train_model(
         if training.full_length_weighting and x.shape[1] == 968:
             importance *= 1.5
         loss = loss * importance
+        if not torch.isfinite(loss):
+            raise FloatingPointError(f"non-finite training loss at date {date}, epoch {epoch + 1}")
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), training.gradient_clip)
+        torch.nn.utils.clip_grad_norm_(
+            model.parameters(), training.gradient_clip, error_if_nonfinite=True
+        )
         optimizer.step()
         losses.append(loss.item())
         position += 1
@@ -265,8 +269,12 @@ class PatrickPredictor:
                     optimizer.zero_grad(set_to_none=True)
                     prediction, _ = model(x, cats, mask)
                     loss = loss_for_model(model, prediction, y, w)
+                    if not torch.isfinite(loss):
+                        raise FloatingPointError(f"non-finite online loss at release date {date}")
                     loss.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.gradient_clip)
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), self.config.gradient_clip, error_if_nonfinite=True
+                    )
                     optimizer.step()
                 model.eval()
         matched = public.select(KEYS).join(labels.select(KEYS), on=KEYS, how="inner").height
