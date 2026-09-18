@@ -8,6 +8,11 @@ three daily steps, betas (0.8, 0.95), and **lr=5e-4**, the user's hypothesis.
 The first replay day has visible lags but no cached prior-day inputs; the first
 update therefore occurs at 1381. This source ambiguity remains explicit.
 
+The first detached full run was launched as `20260918T003149Z-1720d9aa` from
+commit `82c02ad`. Its [launch manifest](references/patrick-ol-launch.json) records
+the immutable input/configuration and [Modal App](https://modal.com/apps/cweill/main/ap-DTPNnpaStYiJFcJg7cpifn).
+The launch record is not a completion or score report.
+
 Both curves start from the same checkpoint. The diagnostic plot includes the
 120-day warmup and uses pooled weighted zero-mean R² over complete trailing
 20-day windows. Primary scores exclude warmup. These replay dates are being
