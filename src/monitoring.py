@@ -6,6 +6,14 @@ from itertools import pairwise
 from pathlib import Path
 
 
+def _optional_diagnostic(metrics, name, value):
+    if value is not None:
+        value = float(value)
+        if not math.isfinite(value):
+            raise ValueError("non-finite training diagnostic")
+        metrics[name] = value
+
+
 def training_events(saved, *, days_per_epoch, epochs):
     completed, epoch, position = saved["completed"], saved["epoch"], saved["position"]
     if (
@@ -17,15 +25,23 @@ def training_events(saved, *, days_per_epoch, epochs):
         or len(saved["losses"]) != position
     ):
         raise ValueError("inconsistent training checkpoint counters")
+    diagnostics = saved.get("diagnostics")
+    if diagnostics is not None and len(diagnostics) != position:
+        raise ValueError("inconsistent training diagnostic counters")
     events = []
     for record in saved["history"]:
         loss, number = float(record["mean_optimization_loss"]), int(record["epoch"])
         if not math.isfinite(loss) or not 1 <= number <= epoch:
             raise ValueError("invalid completed epoch metrics")
+        metrics = {"train/epoch": number, "train/epoch_mean_optimization_loss": loss}
+        _optional_diagnostic(
+            metrics, "train/epoch_mean_unbalanced_loss", record.get("mean_unbalanced_loss")
+        )
+        _optional_diagnostic(metrics, "train/epoch_responder_6_r2", record.get("responder_6_r2"))
         events.append(
             {
                 "step": 2 * number * days_per_epoch + 1,
-                "metrics": {"train/epoch": number, "train/epoch_mean_optimization_loss": loss},
+                "metrics": metrics,
             }
         )
     start = completed - len(saved["losses"]) + 1
@@ -33,15 +49,25 @@ def training_events(saved, *, days_per_epoch, epochs):
         loss = float(loss)
         if not math.isfinite(loss):
             raise ValueError("non-finite recorded optimization loss")
+        metrics = {
+            "train/batch": batch,
+            "train/optimization_loss": loss,
+            "train/epoch_fraction": batch / days_per_epoch,
+            "train/progress_fraction": batch / (days_per_epoch * epochs),
+        }
+        if diagnostics is not None:
+            record = diagnostics[batch - start]
+            sse, energy = float(record["responder_6_sse"]), float(record["responder_6_energy"])
+            if not all(math.isfinite(v) and v >= 0 for v in (sse, energy)):
+                raise ValueError("invalid training diagnostic statistics")
+            _optional_diagnostic(metrics, "train/unbalanced_loss", record["unbalanced_loss"])
+            _optional_diagnostic(
+                metrics, "train/responder_6_r2", 1 - sse / energy if energy > 0 else None
+            )
         events.append(
             {
                 "step": 2 * batch,
-                "metrics": {
-                    "train/batch": batch,
-                    "train/optimization_loss": loss,
-                    "train/epoch_fraction": batch / days_per_epoch,
-                    "train/progress_fraction": batch / (days_per_epoch * epochs),
-                },
+                "metrics": metrics,
             }
         )
     return sorted(events, key=lambda event: event["step"])

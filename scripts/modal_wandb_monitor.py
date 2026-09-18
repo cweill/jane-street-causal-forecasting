@@ -99,13 +99,18 @@ def observe(run_id: str, source_call_id: str, entity: str, project: str, poll_se
         ),
     )
     tracking.define_metric("train/optimization_loss", step_metric="train/batch")
+    tracking.define_metric("train/unbalanced_loss", step_metric="train/batch")
+    tracking.define_metric("train/responder_6_r2", step_metric="train/batch")
     tracking.define_metric("train/progress_fraction", step_metric="train/batch")
     tracking.define_metric("train/epoch_fraction", step_metric="train/batch")
     tracking.define_metric("train/epoch_mean_optimization_loss", step_metric="train/epoch")
+    tracking.define_metric("train/epoch_mean_unbalanced_loss", step_metric="train/epoch")
+    tracking.define_metric("train/epoch_responder_6_r2", step_metric="train/epoch")
     tracking.define_metric("offline/*", step_metric="eval/date_id")
     tracking.define_metric("online/*", step_metric="eval/date_id")
     tracking.summary["loss_note"] = (
         "Detached balancing normalizes optimization loss; this is not an error or learning curve. "
+        "Unbalanced loss and train R2, when saved, are pre-update in-sample diagnostics. "
         "Use replay weighted zero-mean R2 to assess predictions. No evaluation during offline epochs."
     )
     tracking.summary["hardware_note"] = (

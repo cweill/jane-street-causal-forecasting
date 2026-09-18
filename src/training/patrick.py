@@ -10,6 +10,7 @@ import torch
 from src.data.patrick_features import PatrickFeatures
 from src.data.schema import KEYS, LAG_COLUMNS, RESPONDERS, test_view, validate_test
 from src.models.patrick_yam import PatrickYam, multitask_loss
+from src.training.diagnostics import batch_diagnostics, epoch_diagnostics
 
 
 @dataclass(frozen=True)
@@ -101,12 +102,15 @@ def prepare_training(source, dates, feature_config, directory):
     return PreparedPatrick(directory, dates, features)
 
 
-def loss_for_model(model, prediction, y, w):
+def target_weights_for_model(model):
     config = model.config
-    target_weights = (
-        config.target_weights if config.auxiliary_targets else (0, 0, 0, 0, 0, 0, 1, 0, 0)
+    return config.target_weights if config.auxiliary_targets else (0, 0, 0, 0, 0, 0, 1, 0, 0)
+
+
+def loss_for_model(model, prediction, y, w):
+    return multitask_loss(
+        prediction, y, w, target_weights_for_model(model), balance=model.config.balance_losses
     )
-    return multitask_loss(prediction, y, w, target_weights, balance=config.balance_losses)
 
 
 def train_model(
@@ -139,6 +143,7 @@ def train_model(
     )
     rng, history = np.random.default_rng(seed), []
     epoch, position, completed, order, losses = 0, 0, 0, [], []
+    diagnostics = []
     if checkpoint is not None and checkpoint.exists():
         saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
         if saved["signature"] != signature:
@@ -147,6 +152,7 @@ def train_model(
         optimizer.load_state_dict(saved["optimizer"])
         epoch, position, completed = saved["epoch"], saved["position"], saved["completed"]
         order, losses, history = saved["order"], saved["losses"], saved["history"]
+        diagnostics = saved["diagnostics"]
         rng.bit_generator.state = saved["numpy_rng"]
         torch.set_rng_state(saved["torch_rng"])
         if training.device == "cuda":
@@ -177,6 +183,8 @@ def train_model(
         )
         optimizer.step()
         losses.append(loss.item())
+        # Reuse the pre-update predictions; no extra forward pass or RNG changes.
+        diagnostics.append(batch_diagnostics(prediction, y, w, target_weights_for_model(model)))
         position += 1
         completed += 1
         finished_epoch = position == len(order)
@@ -185,11 +193,13 @@ def train_model(
                 {
                     "epoch": epoch + 1,
                     "mean_optimization_loss": float(np.mean(losses)),
+                    **epoch_diagnostics(diagnostics),
                     "note": "Detached loss balancing makes this unsuitable for score/early stopping.",
                 }
             )
             epoch += 1
             position, order, losses = 0, [], []
+            diagnostics = []
         if checkpoint is not None and (finished_epoch or completed % checkpoint_every == 0):
             atomic_torch_save(
                 {
@@ -201,6 +211,7 @@ def train_model(
                     "completed": completed,
                     "order": order,
                     "losses": losses,
+                    "diagnostics": diagnostics,
                     "history": history,
                     "numpy_rng": rng.bit_generator.state,
                     "torch_rng": torch.get_rng_state(),

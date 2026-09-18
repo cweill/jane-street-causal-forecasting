@@ -15,6 +15,8 @@ are never added to code or run configuration.
 
 - Training batch count, fractional epoch, progress, checkpoint optimization losses,
   and completed-epoch mean optimization losses.
+- Newly instrumented runs also save unbalanced multitask loss and responder_6
+  training R², with batch and epoch charts (definitions below).
 - Separate offline/online daily diagnostic R², complete trailing 20-day pooled R²,
   and cumulative R² over scored dates only. Warmup is explicitly marked and excluded
   from scored cumulative metrics. No validation pass is added during training.
@@ -27,6 +29,39 @@ balancing divides each target loss by its own detached value; the displayed valu
 mainly reflects sample weighting. Use weighted zero-mean R² to assess predictions.
 Raw unbalanced loss was not saved by this running trainer and cannot be recovered
 from its stored loss values. The monitor does not fabricate it or tune the run.
+
+### Training diagnostics for subsequent runs
+
+The trainer now saves these additional scalar observations from its existing
+**pre-update, train-mode forward pass**, including dropout. It performs no extra
+model forward pass, validation pass, or parameter update.
+
+| W&B metric | Definition |
+| --- | --- |
+| `train/unbalanced_loss` | Target-weighted average of each active target's weighted SSE / target energy, before detached balancing and date multipliers. Respects the auxiliary-target switch. |
+| `train/responder_6_r2` | Daily weighted zero-mean R² for responder_6, using competition row weights. |
+| `train/epoch_mean_unbalanced_loss` | Arithmetic mean of defined daily unbalanced losses across the epoch. |
+| `train/epoch_responder_6_r2` | One minus pooled responder_6 SSE divided by pooled target energy across the epoch; not the mean of daily R². |
+
+Diagnostics use float64 reductions and exclude zero-weight rows. Zero-energy R²
+and losses with no active target energy are undefined and omitted from W&B.
+Training R² includes predictions from successive model states during the epoch;
+it is **not held-out R² or an evaluation of the final epoch checkpoint**. It does
+not replace causal replay or select epochs. Training date multipliers affect
+optimization only, not these diagnostics.
+
+Current-epoch diagnostic records are saved alongside losses in atomic training
+checkpoints, restored on resume, and pooled into persistent epoch summaries. The
+monitor accepts older checkpoints without diagnostics and leaves those charts
+absent. The active run `20260918T200909Z-2b3a45f0` continues on its original image;
+neither its trainer nor its observer was restarted for this logging change. New
+trainer and monitor deployments will expose the additional metrics on future runs.
+
+Verification: a three-epoch CPU fixture with dropout produced exactly the same
+model tensors and original optimization losses before and after instrumentation.
+Unbalanced loss changed from 1.282719 to 1.252521 while normalized loss stayed
+constant. Tests also cover hand-calculated errors, target selection, undefined
+scores, pooled R², and identical diagnostic histories after interrupted training.
 
 Individual loss points are recovered from each observed checkpoint's current epoch;
 completed-epoch means remain available afterward. If a polling gap crosses an epoch

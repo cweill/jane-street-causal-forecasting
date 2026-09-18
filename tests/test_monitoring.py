@@ -55,6 +55,40 @@ def write_day(root, date, sse, energy, scored, committed=True):
         (saved / "replay.json").write_text(json.dumps({"completed_date": date}))
 
 
+def test_training_diagnostics_are_logged_with_true_axes_and_undefined_scores_omitted():
+    saved = {
+        "completed": 5,
+        "epoch": 1,
+        "position": 2,
+        "losses": [0.4, 0.6],
+        "diagnostics": [
+            {"unbalanced_loss": 0.25, "responder_6_sse": 2.0, "responder_6_energy": 8.0},
+            {"unbalanced_loss": None, "responder_6_sse": 1.0, "responder_6_energy": 0.0},
+        ],
+        "history": [
+            {
+                "epoch": 1,
+                "mean_optimization_loss": 0.8,
+                "mean_unbalanced_loss": 0.3,
+                "responder_6_r2": -0.2,
+            }
+        ],
+    }
+    events = monitor().training_events(saved, days_per_epoch=3, epochs=2)
+    assert events[0]["metrics"]["train/epoch_mean_unbalanced_loss"] == 0.3
+    assert events[0]["metrics"]["train/epoch_responder_6_r2"] == -0.2
+    assert events[1]["metrics"]["train/batch"] == 4
+    assert events[1]["metrics"]["train/unbalanced_loss"] == 0.25
+    assert events[1]["metrics"]["train/responder_6_r2"] == 0.75
+    assert "train/responder_6_r2" not in events[2]["metrics"]
+    assert "train/unbalanced_loss" not in events[2]["metrics"]
+    with pytest.raises(ValueError, match="diagnostic"):
+        monitor().training_events({**saved, "diagnostics": []}, days_per_epoch=3, epochs=2)
+    saved["diagnostics"][0]["unbalanced_loss"] = float("nan")
+    with pytest.raises(ValueError, match="diagnostic"):
+        monitor().training_events(saved, days_per_epoch=3, epochs=2)
+
+
 def test_eval_events_require_committed_days_and_pool_statistics_without_warmup(tmp_path):
     module = monitor()
     root = tmp_path / "offline"

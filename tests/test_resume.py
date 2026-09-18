@@ -54,6 +54,7 @@ def test_interrupted_training_restores_optimizer_shuffle_position_and_rng(tmp_pa
         checkpoint_path=checkpoint,
         checkpoint_every=2,
     )
+    assert all("mean_unbalanced_loss" in row and "responder_6_r2" in row for row in history)
     assert history == expected_history
     for name, value in expected.state_dict().items():
         torch.testing.assert_close(actual.state_dict()[name], value, rtol=0, atol=0)
