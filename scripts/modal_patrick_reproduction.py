@@ -1,9 +1,10 @@
-"""Detached, resumable Patrick plot run; CPU preparation completes before GPU allocation.
+"""Persistent Patrick plot jobs; submission returns before training starts.
 
-TMPDIR=/tmp uv run --with modal==1.5.5 \\
-    modal run --detach scripts/modal_patrick_reproduction.py
+TMPDIR=/tmp uv run --with modal==1.5.5 modal deploy scripts/modal_patrick_reproduction.py
+TMPDIR=/tmp uv run --with modal==1.5.5 python -m scripts.modal_patrick_reproduction
 
-Resume with --run-id <same-id> using the same source commit and input data.
+Resume with --run-id <same-id> using the same source commit and input data, only
+when the previous call has terminated. Poll the saved function_call_id separately.
 """
 
 import json
@@ -212,13 +213,11 @@ def run_gpu(digest: str, run_id: str):
 def orchestrate(digest: str, run_id: str, launch: dict):
     # Keep both stages server-side so disconnecting the local terminal during CPU
     # preparation cannot prevent the later GPU stage from being scheduled.
-    prepare_cpu.remote(digest, run_id, launch)
-    return run_gpu.remote(digest, run_id)
+    prepare_cpu.spawn(digest, run_id, launch).get()
+    return run_gpu.spawn(digest, run_id).get()
 
 
-@app.local_entrypoint()
 def main(data: str = "data/competition/train.parquet", run_id: str = ""):
-    from src.artifacts import sha256_file
     from src.config import load_config
     from src.cv import configured_folds
     from src.data.loader import ParquetSource
@@ -269,13 +268,56 @@ def main(data: str = "data/competition/train.parquet", run_id: str = ""):
     print(
         f"Starting {run_id}; CPU preparation then one L4 with a 12-hour execution cap.", flush=True
     )
-    result = orchestrate.remote(digest, run_id, launch)
-    archive = local.parent / f"{run_id}.tar.gz"
-    with archive.open("wb") as handle:
-        for chunk in volume.read_file(result["archive"]):
-            handle.write(chunk)
-    if sha256_file(archive) != result["sha256"]:
-        raise ValueError("downloaded result checksum mismatch")
-    with tarfile.open(archive) as handle:
-        handle.extractall(local.parent, filter="data")
-    print(json.dumps({"artifacts": str(local), **result}, indent=2), flush=True)
+    # Do not wait in a local App context: a network failure must not cancel the job.
+    # Keep each attempt's handle, including resumes of the same run directory.
+    record = local / f"submission-{uuid.uuid4().hex[:8]}.json"
+    submitted = submit_deployed("orchestrate", digest, run_id, launch, record_path=record)
+    print(json.dumps({"artifacts": str(local), **submitted}, indent=2), flush=True)
+
+
+def submit_deployed(function_name, *args, record_path):
+    """Submit to the deployed App, persist the handle, and return without waiting."""
+    record_path = Path(record_path)
+    if record_path.exists():
+        raise FileExistsError(record_path)
+    function = modal.Function.from_name("patrick-online-reproduction", function_name)
+    call = function.spawn(*args)
+    record = {
+        "app": "patrick-online-reproduction",
+        "function": function_name,
+        "function_call_id": call.object_id,
+        "submitted_at": datetime.now(UTC).isoformat(),
+    }
+    record_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = record_path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(record, indent=2) + "\n")
+    temporary.replace(record_path)
+    return record
+
+
+@app.function(
+    image=image,
+    cpu=(0.125, 0.125),
+    memory=(512, 512),
+    timeout=60,
+    max_containers=1,
+    min_containers=0,
+    retries=0,
+    include_source=False,
+)
+def submission_probe(token: str):
+    """Cheap integration probe for submitter-exit survival; no GPU or dataset access."""
+    import time
+
+    time.sleep(10)
+    return {"token": token, "status": "completed_after_delay"}
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data", default="data/competition/train.parquet")
+    parser.add_argument("--run-id", default="")
+    args = parser.parse_args()
+    main(data=args.data, run_id=args.run_id)

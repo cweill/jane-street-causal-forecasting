@@ -1,0 +1,20 @@
+{
+  "run_id": "20260918T003149Z-1720d9aa",
+  "app_id": "ap-DTPNnpaStYiJFcJg7cpifn",
+  "outcome": "cancelled before the first training checkpoint; no plot or score",
+  "checked_at": "2026-09-18T20:04:31Z",
+  "cpu_preparation_seconds": 480.70402790099996,
+  "prepared_days": 1380,
+  "cache_bytes": 13228057675,
+  "cache_key": "c18ab7f83ca8fe0546c72a4c4dc53ed830f9aa0346ddff303b56f7d8ba295b35",
+  "last_saved_status": {
+    "phase": "preparing"
+  },
+  "training_checkpoint_present": false,
+  "coordinator_cancellation_utc": "2026-09-18T00:41:30Z",
+  "gpu_cancellation_utc": "2026-09-18T00:44:23Z",
+  "local_launcher_error": "OSError: [Errno 51] Network is unreachable",
+  "diagnosis": "Detached ephemeral App with blocking remote calls did not survive this client failure. Logs establish cancellation, not the precise server cancellation policy.",
+  "fix": "Deploy the App; spawn its coordinator; persist function_call_id and exit the submitting process. Poll results independently.",
+  "validation": "Real ten-second CPU job remained pending after its submitter exited, then completed; see patrick-submission-rehearsal.json."
+}

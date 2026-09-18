@@ -100,3 +100,13 @@ local suite now passes 90 tests, and all five deliberate leakage mutations were 
 `configs/patrick_ol.yaml` explicitly uses dates 1380–1698 for the requested plot,
 with 1500–1698 as its primary scored interval. This reconstructs the author's
 experiment under documented assumptions; it is not a fresh holdout for later tuning.
+
+## Persistent submission repair (2026-09-18)
+
+The first full plot attempt was cancelled before training; its CPU cache survived.
+The [incident record](references/patrick-ol-interruption.json) includes the observed
+cancellation times and local network error. The fixed launcher submits a durable
+job to a deployed App and saves its FunctionCall ID instead of blocking locally.
+The [integration probe](references/patrick-submission-rehearsal.json) remained
+pending after its submitting process exited and subsequently completed. This tests
+job lifetime separately from the earlier model/optimizer checkpoint rehearsals.

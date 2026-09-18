@@ -1,0 +1,13 @@
+{
+  "app": "patrick-online-reproduction",
+  "function": "submission_probe",
+  "function_call_id": "fc-01M2V22JMWJEB15P48KB5AR88X",
+  "submitted_at": "2026-09-18T20:07:10.321310+00:00",
+  "submitter_exit_code": 0,
+  "pending_after_submitter_exit": true,
+  "result": {
+    "token": "12a08e8bc5b94bf6afe43cf1bb5d415c",
+    "status": "completed_after_delay"
+  },
+  "passed": true
+}

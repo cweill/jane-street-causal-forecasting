@@ -11,7 +11,13 @@ update therefore occurs at 1381. This source ambiguity remains explicit.
 The first detached full run was launched as `20260918T003149Z-1720d9aa` from
 commit `82c02ad`. Its [launch manifest](references/patrick-ol-launch.json) records
 the immutable input/configuration and [Modal App](https://modal.com/apps/cweill/main/ap-DTPNnpaStYiJFcJg7cpifn).
-The launch record is not a completion or score report.
+It was cancelled at 17:44 Pacific on September 17 before a training checkpoint
+was written. CPU preparation completed and its cache survived. The local launcher
+reported a network error; the detached invocation did not provide the intended
+lifetime isolation. See the [incident evidence](references/patrick-ol-interruption.json).
+The corrected launcher uses a deployed App and `.spawn()`, saving a job ID and
+exiting immediately. A [real submission-lifetime test](references/patrick-submission-rehearsal.json)
+proved that its CPU probe remained pending after the submitter exited, then completed.
 
 Both curves start from the same checkpoint. The diagnostic plot includes the
 120-day warmup and uses pooled weighted zero-mean R² over complete trailing
@@ -74,7 +80,9 @@ From a clean, committed checkout with Modal credentials already configured:
 
 ```bash
 TMPDIR=/tmp uv run --with modal==1.5.5 \
-  modal run --detach scripts/modal_patrick_reproduction.py
+  modal deploy scripts/modal_patrick_reproduction.py
+TMPDIR=/tmp uv run --with modal==1.5.5 \
+  python -m scripts.modal_patrick_reproduction
 ```
 
 The launcher runs the causal gate locally and remotely, verifies the fixed date
@@ -82,12 +90,14 @@ coverage and SHA256 identity of all ten data partitions, and uploads only explic
 code paths and competition training files. No Kaggle credentials are uploaded.
 CPU preparation completes and commits its cache before an L4 is allocated.
 The CPU stage is capped at two hours, the single GPU stage at twelve hours, with
-no retries. Both stages run under a server-side coordinator. Modal's
-[detached execution](https://modal.com/docs/guide/apps) keeps the work running if
-the local client disconnects; [Volume commits](https://modal.com/docs/guide/volumes)
-persist the recovery state.
+no retries. Both stages run under a server-side coordinator. The launcher follows
+Modal's [deployed job submission pattern](https://modal.com/docs/guide/job-queue):
+`.spawn()` queues work and returns a FunctionCall ID. The submitting process exits
+without awaiting training or maintaining an ephemeral App context. Volume commits
+persist recovery state; polling is independent of the submitting process.
+Do not redeploy the App while a run is active.
 
-The command prints the App URL and run ID. The persistent Volume is
+The command prints the run ID and saves `submission-*.json` with a FunctionCall ID. The persistent Volume is
 `janestreet-patrick-reproduction`:
 
 - `/launches/<run-id>/`: source archive, exact commit/config/data manifest, splits,
@@ -100,13 +110,14 @@ The command prints the App URL and run ID. The persistent Volume is
 - `/runs/<run-id>/result.json`: completed primary scores and update audit.
 - `/runs/<run-id>.tar.gz`: compact result archive; large recovery state stays on Volume.
 
-The local client downloads and verifies the archive when it remains connected.
-If it disconnects, use `modal volume get janestreet-patrick-reproduction
+Poll with `modal.FunctionCall.from_id(call_id).get(timeout=0)` in a separate
+process; `TimeoutError` means pending. After successful completion, use `modal volume get janestreet-patrick-reproduction
 /runs/<run-id>.tar.gz artifacts/` after completion and verify against
 `/runs/<run-id>/download.json`. Never interpret `status.json` alone as a completed
 result; require `result.json` and the plot artifacts.
 
-To resume, first confirm the original App has stopped to avoid two writers. Restore
+To resume, first confirm the original FunctionCall has terminated to avoid two writers.
+A deployed App can remain idle after its call finishes. Restore
 the recorded commit (or use its source archive), then repeat the launch command
 with `--run-id <same-id>`. Resume requires the same source, configuration and input
 identity, and reuses validated preparation and model checkpoints. A code change
