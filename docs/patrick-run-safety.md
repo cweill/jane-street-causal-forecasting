@@ -25,6 +25,14 @@ with FunctionCall `fc-01M2V26FSA5FZHV9AR3E7JRP8A`. Its
 model/data settings and links the persistent deployment. The original run remains
 available as failure evidence; the compatible preparation cache is reused.
 
+Later, Modal preempted that coordinator. Its restarted preparation call hit a
+tuple-versus-list identity-comparison bug, but the independent GPU call
+`fc-01M2V292F49YDZ1KSKJ2NS6M0J` continued training. Monitoring was redirected to
+that GPU call. The [incident record](references/patrick-coordinator-preemption.json)
+documents the correction; the active trainer was not redeployed. Future launch
+comparison uses canonical JSON and still rejects actual source/config/data changes.
+Do not rerun the failed coordinator while its GPU child is active.
+
 Both curves start from the same checkpoint. The diagnostic plot includes the
 120-day warmup and uses pooled weighted zero-mean R² over complete trailing
 20-day windows. Primary scores exclude warmup. These replay dates are being

@@ -1,0 +1,12 @@
+{
+  "source_run_id": "20260918T200909Z-2b3a45f0",
+  "coordinator_call_id": "fc-01M2V26FSA5FZHV9AR3E7JRP8A",
+  "gpu_call_id": "fc-01M2V292F49YDZ1KSKJ2NS6M0J",
+  "observer_call_id": "fc-01M2V40A8R0Z0S2QEJ6EYFBZZ0",
+  "cause": "Modal preempted the coordinator. Its restarted prepare_cpu call compared tuple-containing launch config with JSON-decoded lists and raised a false identity mismatch.",
+  "impact": "Coordinator and parent-watching observer failed; the separately spawned GPU job continued training.",
+  "evidence": "Call graph showed the GPU child pending and one running GPU input; logs continued checkpointing beyond batch 2575 after the coordinator exception.",
+  "recovery": "Resume the same W&B run with its source_call_id pointing directly to the active GPU child; no training restart or trainer deployment.",
+  "code_fix": "Normalize launch identity through JSON before comparing; real code/data/config changes still rejected.",
+  "deployment_note": "Identity fix is for future deployment only. The active training App still uses its original source image."
+}

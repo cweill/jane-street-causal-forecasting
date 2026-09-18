@@ -63,12 +63,19 @@ TMPDIR=/tmp uv run --with modal==1.5.5 \
   modal deploy scripts/modal_wandb_monitor.py
 TMPDIR=/tmp uv run --with modal==1.5.5 python -m scripts.modal_wandb_monitor \
   --run-id 20260918T200909Z-2b3a45f0 \
-  --source-call-id fc-01M2V26FSA5FZHV9AR3E7JRP8A
+  --source-call-id fc-01M2V292F49YDZ1KSKJ2NS6M0J
 ```
 
 The submission exits immediately and saves the observer FunctionCall ID and W&B URL
 in `artifacts/patrick-reproduction/<run-id>/wandb-monitor.json`. W&B 0.30.0 is pinned
 in the observer image; the trainer's lockfile and running image are unchanged.
+
+The current observer watches the **GPU FunctionCall directly**. The original
+coordinator was preempted and failed on restart while its spawned GPU child kept
+training; a parent-watching observer consequently reported failure. See the
+[preemption record](references/patrick-coordinator-preemption.json). A coordinator's
+failure is not proof that its separately spawned GPU child stopped. Check the
+child call and saved checkpoints before restarting training or creating another writer.
 
 Tests cover metric payloads excluding checkpoint tensors, true batch positions,
 undefined/invalid values, committed-day visibility, warmup exclusion, pooled rolling

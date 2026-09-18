@@ -57,6 +57,7 @@ def prepare_cpu(digest: str, run_id: str, launch: dict):
     from src.config import load_config
     from src.cv import configured_folds
     from src.data.loader import RestrictedDateSource
+    from src.launch_identity import validate_launch_identity
     from src.safety import safety_gate
     from src.training.cache import prepare_cached
 
@@ -72,8 +73,7 @@ def prepare_cpu(digest: str, run_id: str, launch: dict):
     metadata.mkdir(parents=True, exist_ok=True)
     identity = {**launch, "dataset_sha256": digest, "code_sha256": gate["code_and_tests_sha256"]}
     manifest_path = metadata / "launch.json"
-    if manifest_path.exists() and json.loads(manifest_path.read_text()) != identity:
-        raise ValueError("launch identity changed; restore the recorded source/data to resume")
+    identity = validate_launch_identity(manifest_path, identity)
     write_json(manifest_path, identity)
     write_json(metadata / "splits.json", asdict(fold))
     write_json(metadata / "safety_gate.json", gate)
