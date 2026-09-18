@@ -4,6 +4,9 @@ The Patrick run is observed at:
 
 https://wandb.ai/cweill-self/janestreet-repro/runs/20260918T200909Z-2b3a45f0
 
+[Connection evidence](references/patrick-wandb-monitor.json) records the deployed
+observer's job ID and metrics independently read back from the W&B API.
+
 The `janestreet-repro` project was created with private visibility in the user's
 `cweill-self` entity. The monitor uses the existing Modal `wandb` secret. Credentials
 are never added to code or run configuration.

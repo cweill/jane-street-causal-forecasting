@@ -110,3 +110,13 @@ job to a deployed App and saves its FunctionCall ID instead of blocking locally.
 The [integration probe](references/patrick-submission-rehearsal.json) remained
 pending after its submitting process exited and subsequently completed. This tests
 job lifetime separately from the earlier model/optimizer checkpoint rehearsals.
+
+## W&B observer (2026-09-18)
+
+The separate read-only CPU observer was connected to the running Patrick job.
+W&B's API confirmed real optimization-loss history and training progress;
+[connection evidence](references/patrick-wandb-monitor.json) records the check.
+All 93 local tests and GitHub CI pass. Monitoring tests verify pooled evaluation
+statistics, exclusion of warmup from scored cumulative R², checkpoint visibility,
+true batch positions, and exclusion of model/optimizer contents from metric payloads.
+The trainer image, lockfile, model configuration, and active job were not changed.

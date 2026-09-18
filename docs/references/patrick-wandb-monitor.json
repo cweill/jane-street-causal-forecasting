@@ -1,0 +1,35 @@
+{
+  "run_id": "20260918T200909Z-2b3a45f0",
+  "source_call_id": "fc-01M2V26FSA5FZHV9AR3E7JRP8A",
+  "entity": "cweill-self",
+  "project": "janestreet-repro",
+  "monitor_call_id": "fc-01M2V3B4RSW8BPQCEZA73HB39B",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/20260918T200909Z-2b3a45f0",
+  "verified_at": "2026-09-18T20:31:08.998303+00:00",
+  "wandb_state": "running",
+  "metrics_summary": {
+    "completed_batches": 1575,
+    "epochs_completed": 1,
+    "monitor_status": "running",
+    "source_phase": "training",
+    "total_batches": 6900,
+    "train/epoch_mean_optimization_loss": 0.7614211893060069
+  },
+  "history_sample": [
+    {
+      "_step": 2956,
+      "train/batch": 1478,
+      "train/optimization_loss": 0.15579481422901154
+    },
+    {
+      "_step": 3028,
+      "train/batch": 1514,
+      "train/optimization_loss": 0.507283091545105
+    },
+    {
+      "_step": 3042,
+      "train/batch": 1521,
+      "train/optimization_loss": 1.1770107746124268
+    }
+  ]
+}
