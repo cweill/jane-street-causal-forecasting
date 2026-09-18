@@ -1,0 +1,109 @@
+{
+  "status": "passed",
+  "source_run": "20260918T200909Z-2b3a45f0",
+  "gpu": "NVIDIA L4",
+  "precision": {
+    "matmul": "highest",
+    "cudnn_allow_tf32": false,
+    "tf32_comparator": "Separate model-only timing; excluded from strict parity assertions"
+  },
+  "safety_gate": {
+    "passed": true,
+    "code_and_tests_sha256": "2b6d448c678b0491927b5741dfb9c1ca675ea1b243507ec510eaec8cff8a40b8",
+    "command": [
+      "/.uv/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "/project/tests/test_metric.py",
+      "/project/tests/test_lag_visibility.py",
+      "/project/tests/test_no_future_leakage.py",
+      "/project/tests/test_features.py",
+      "/project/tests/test_model.py",
+      "/project/tests/test_offline_boundaries.py",
+      "/project/tests/test_online_update_timing.py",
+      "/project/tests/test_gateway_parity.py",
+      "/project/tests/test_patrick_model.py",
+      "/project/tests/test_patrick_pipeline.py",
+      "/project/tests/test_pilot_boundaries.py",
+      "/project/tests/test_fixed_protocols.py",
+      "/project/tests/test_preparation_cache.py",
+      "/project/tests/test_rolling_plot.py",
+      "/project/tests/test_resume.py",
+      "/project/tests/test_replay_acceleration.py",
+      "/project/tests/test_parallel_replay.py",
+      "/project/tests/test_stacked_ensemble.py"
+    ],
+    "output": "........................................................................ [ 80%]\n.................                                                        [100%]\n89 passed in 23.94s\n"
+  },
+  "timings": [
+    {
+      "models": 1,
+      "timestamps": 128,
+      "assets": 36,
+      "loop_seconds": 1.7866278830000013,
+      "stacked_seconds": 1.7617506214999992,
+      "speedup": 1.0141207621535113,
+      "tf32_loop_seconds": 1.8398797634999937,
+      "speedup_vs_tf32_loop": 1.0443474468216583,
+      "tf32_loop_max_abs_prediction_difference": 0.0001576840877532959,
+      "stack_seconds": 0.005831735000001004,
+      "max_abs_prediction_error": 5.364418029785156e-07,
+      "max_abs_hidden_error": 2.041459083557129e-06
+    },
+    {
+      "models": 4,
+      "timestamps": 128,
+      "assets": 36,
+      "loop_seconds": 7.438799507500001,
+      "stacked_seconds": 1.746504534500005,
+      "speedup": 4.259250039467894,
+      "tf32_loop_seconds": 7.432584621499998,
+      "speedup_vs_tf32_loop": 4.255691568317527,
+      "tf32_loop_max_abs_prediction_difference": 0.00015744566917419434,
+      "stack_seconds": 0.009757515999993416,
+      "max_abs_prediction_error": 1.0728836059570312e-06,
+      "max_abs_hidden_error": 2.384185791015625e-06
+    },
+    {
+      "models": 17,
+      "timestamps": 128,
+      "assets": 36,
+      "loop_seconds": 31.786366062000013,
+      "stacked_seconds": 1.7879988060000045,
+      "speedup": 17.777621525995546,
+      "tf32_loop_seconds": 32.60264085100002,
+      "speedup_vs_tf32_loop": 18.234151354908644,
+      "tf32_loop_max_abs_prediction_difference": 0.00019025802612304688,
+      "stack_seconds": 0.25447235300001125,
+      "max_abs_prediction_error": 1.0728836059570312e-06,
+      "max_abs_hidden_error": 3.2782554626464844e-06
+    }
+  ],
+  "online_replay": {
+    "models": 3,
+    "dates": [
+      1380,
+      1381
+    ],
+    "loop_seconds": 119.81246027199995,
+    "stacked_seconds": 40.89680599000002,
+    "speedup": 2.929628790602772,
+    "max_abs_prediction_error": 1.3262033462524414e-06,
+    "absolute_r2_difference": 6.408819475112182e-09,
+    "weights_and_optimizer_identical": true,
+    "future_labels_no_effect": true
+  },
+  "atol": 2e-06,
+  "rtol": 2e-05,
+  "note": "Distinct perturbed copies of one checkpoint for correctness/throughput only; not trained seed ensembles or a score experiment.",
+  "launch": {
+    "benchmark_id": "stacked-fp32-20260918T224821Z",
+    "call_id": "fc-01M2VB9R3PVFZ81RDSDPR6Z91J",
+    "source_commit": "cf13ae3",
+    "source_run": "20260918T200909Z-2b3a45f0"
+  },
+  "local_and_remote_code_match": true,
+  "ci_url": "https://github.com/cweill/janestreet-repro/actions/runs/35403089331",
+  "full_local_suite": "108 passed in 8.24s"
+}

@@ -1,0 +1,36 @@
+{
+  "source_run": "20260918T200909Z-2b3a45f0",
+  "initial_failed_call": "fc-01M2VAQMKDYSQ6R7Z9P48TVQRF",
+  "initial_max_abs_prediction_difference": 0.0001576840877532959,
+  "diagnostic_call": "fc-01M2VB59QNWS2NX93JC25PPWMX",
+  "diagnostic": [
+    {
+      "cudnn_allow_tf32": true,
+      "deterministic": true,
+      "gru_max_abs_error": 0.001291811466217041,
+      "prediction_max_abs_error": 9.822845458984375e-05,
+      "hidden_max_abs_error": 0.0008387714624404907
+    },
+    {
+      "cudnn_allow_tf32": false,
+      "deterministic": true,
+      "gru_max_abs_error": 5.960464477539062e-07,
+      "prediction_max_abs_error": 4.76837158203125e-07,
+      "hidden_max_abs_error": 1.5459954738616943e-06
+    },
+    {
+      "cudnn_allow_tf32": true,
+      "deterministic": false,
+      "gru_max_abs_error": 0.001291811466217041,
+      "prediction_max_abs_error": 9.822845458984375e-05,
+      "hidden_max_abs_error": 0.0008387714624404907
+    }
+  ],
+  "conclusion": "cuDNN TF32 GRU versus float32 stacked projections caused the discrepancy. Full float32 comparisons retain the original tolerances; prior TF32 loop is separately timed. No model kernel change or tolerance widening was required.",
+  "benchmark_launch": {
+    "benchmark_id": "stacked-fp32-20260918T224821Z",
+    "call_id": "fc-01M2VB9R3PVFZ81RDSDPR6Z91J",
+    "source_commit": "cf13ae3",
+    "source_run": "20260918T200909Z-2b3a45f0"
+  }
+}

@@ -66,3 +66,39 @@ The source volume is read-only and results use a separate benchmark directory.
 
 The active single-seed plot reproduction remains on its frozen deployment. Adding
 this implementation does not change its running workers or results.
+
+## L4 measurements
+
+The model-only benchmark used 128 timestamps with 36 symbols, alternating timing
+order after warmup. Results are medians of two measurements per path. GRU weights
+were flattened before timing to avoid penalizing the reference for copied storage.
+
+| Members | Float32 loop | Stacked | Speedup | Speedup vs. TF32 loop |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 1.787 s | 1.762 s | 1.01× | 1.04× |
+| 4 | 7.439 s | 1.747 s | 4.26× | 4.26× |
+| 17 | 31.786 s | 1.788 s | 17.78× | 18.23× |
+
+The maximum float32 prediction difference across these comparisons was `1.073e-6`;
+the maximum hidden-state difference was `3.279e-6`. Both passed the combined absolute
+and relative tolerances above. Building the 17-member stacked snapshot took 0.254 s.
+These timings exclude preprocessing, daily online training, and checkpoint storage.
+Single-member throughput is effectively unchanged. The observed scaling on this
+small panel does not guarantee constant latency for arbitrary ensemble sizes.
+
+The [precision diagnostic](references/patrick-stacked-precision.json) records the
+original failed comparison and the controlled experiment identifying cuDNN TF32.
+The [complete benchmark record](references/patrick-stacked-ensemble-benchmark.json)
+includes the Modal call, implementation commit, matching local/remote source hash,
+and the 89-test remote safety gate. The full local suite passed all 108 tests;
+[CI passed](https://github.com/cweill/janestreet-repro/actions/runs/35403089331),
+including leakage mutation checks.
+
+The three-member online replay on dates 1380–1381 also passed: maximum prediction
+difference `1.327e-6`, absolute pooled R² difference `6.409e-9`, and bitwise-identical
+final weights and Adam state. Perturbing date 1381 responders changed neither
+predictions through that date nor the final weights/optimizer. Its measured times
+were 119.81 s for the loop and 40.90 s for stacked replay. These two-day timings are
+secondary correctness-run observations: the copied reference GRUs emitted a storage
+compaction warning, unlike the explicitly flattened model-only benchmark above.
+They should not be used as a production latency guarantee.
