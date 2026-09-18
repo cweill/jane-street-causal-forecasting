@@ -23,6 +23,8 @@ The [W&B monitor](docs/wandb-monitoring.md) observes the running Patrick job's s
 losses and evaluations through a separate CPU process with read-only data access.
 Patrick's optional [stacked ensemble inference](docs/stacked-ensemble-inference.md)
 batches model weights and GRU states across seeds while retaining separate online optimizers.
+The [scaling profile](docs/patrick-scaling-profile.md) separates timestamp inference,
+daily updates, and preparation costs for 1, 4, and 17 models on an L4.
 
 ## Run locally
 
