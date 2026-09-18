@@ -18,7 +18,9 @@ The [first L4 pilot passed](docs/real-data-pilot-report.md), including a real-da
 future-responder perturbation check. The
 [Patrick L4 pilot also passed](docs/patrick-pilot-report.md) on the identical slice.
 The [Patrick plot runbook](docs/patrick-run-safety.md) records the cache benchmark,
-CUDA interruption/recovery rehearsal, fixed run settings, and detached Modal launcher.
+CUDA interruption/recovery rehearsal, fixed run settings, and persistent Modal launcher.
+The [W&B monitor](docs/wandb-monitoring.md) observes the running Patrick job's saved
+losses and evaluations through a separate CPU process with read-only data access.
 
 ## Run locally
 
