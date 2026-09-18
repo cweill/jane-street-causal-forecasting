@@ -1,6 +1,15 @@
 # W&B monitoring without restarting training
 
-The Patrick run is observed at:
+The **current evaluation** runs frozen and online replay concurrently:
+
+https://wandb.ai/cweill-self/janestreet-repro/runs/parallel-20260918T215904Z-c79fc1
+
+See [parallel replay](replay-acceleration.md) and the
+[verified handoff](references/patrick-parallel-replay-launch.json). It reuses the
+original trained checkpoint and 110 completed frozen days. The original worker
+and observer were stopped intentionally after checking replacement predictions.
+
+The **archived training run** and original sequential-observer design below are at:
 
 https://wandb.ai/cweill-self/janestreet-repro/runs/20260918T200909Z-2b3a45f0
 
@@ -27,7 +36,7 @@ are never added to code or run configuration.
 **Optimization loss is not a prediction-error curve.** Patrick's detached loss
 balancing divides each target loss by its own detached value; the displayed value
 mainly reflects sample weighting. Use weighted zero-mean R² to assess predictions.
-Raw unbalanced loss was not saved by this running trainer and cannot be recovered
+Raw unbalanced loss was not saved by the original trainer and cannot be recovered
 from its stored loss values. The monitor does not fabricate it or tune the run.
 
 ### Training diagnostics for subsequent runs
@@ -53,9 +62,10 @@ optimization only, not these diagnostics.
 Current-epoch diagnostic records are saved alongside losses in atomic training
 checkpoints, restored on resume, and pooled into persistent epoch summaries. The
 monitor accepts older checkpoints without diagnostics and leaves those charts
-absent. The active run `20260918T200909Z-2b3a45f0` continues on its original image;
-neither its trainer nor its observer was restarted for this logging change. New
-trainer and monitor deployments will expose the additional metrics on future runs.
+absent. Run `20260918T200909Z-2b3a45f0` completed training on its original image;
+neither its trainer nor its observer was restarted for this logging change. Its
+evaluation was later superseded by the parallel workers linked above. New trainer
+and monitor deployments expose the additional metrics on future training runs.
 
 Verification: a three-epoch CPU fixture with dropout produced exactly the same
 model tensors and original optimization losses before and after instrumentation.
@@ -89,7 +99,7 @@ with separate batch/epoch/date chart axes. On observer restart, W&B restores the
 next step and already-logged observations are skipped. Do not start two observers
 for the same W&B run simultaneously.
 
-## Launch
+## Archived sequential observer launch
 
 Deploy only this monitor App; do not redeploy the active training App:
 
@@ -105,7 +115,7 @@ The submission exits immediately and saves the observer FunctionCall ID and W&B 
 in `artifacts/patrick-reproduction/<run-id>/wandb-monitor.json`. W&B 0.30.0 is pinned
 in the observer image; the trainer's lockfile and running image are unchanged.
 
-The current observer watches the **GPU FunctionCall directly**. The original
+The original observer watched the **GPU FunctionCall directly**. The original
 coordinator was preempted and failed on restart while its spawned GPU child kept
 training; a parent-watching observer consequently reported failure. See the
 [preemption record](references/patrick-coordinator-preemption.json). A coordinator's

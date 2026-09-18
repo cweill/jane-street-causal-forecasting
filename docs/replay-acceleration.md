@@ -6,6 +6,19 @@ on separate L4 workers. There is no retraining, hyperparameter change, or change
 to the date splits, label release, online update count, learning rate, or score.
 Within each worker, days and API timestamps remain strictly chronological.
 
+## Active run
+
+[W&B dashboard](https://wandb.ai/cweill-self/janestreet-repro/runs/parallel-20260918T215904Z-c79fc1)
+and [launch/verification record](references/patrick-parallel-replay-launch.json).
+
+Launched from commit `10be09c`. The frozen worker imported 110 completed dates
+(1380–1489). Its newly computed predictions on 1490–1491 exactly matched the
+original worker; online predictions on 1380–1382 exactly matched the GPU benchmark.
+Both replacements and their observer were verified running before the original
+GPU and observer were intentionally stopped at 22:03 UTC on 2026-09-18.
+Original checkpoints and results remain on the source volume. No training was
+repeated. The original W&B run is labeled superseded and links to the replacement.
+
 ## Verified implementation changes
 
 - Streaming `forward_step` constructs its own all-present mask for the current

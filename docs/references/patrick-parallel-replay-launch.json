@@ -1,0 +1,54 @@
+{
+  "launch": {
+    "run_id": "parallel-20260918T215904Z-c79fc1",
+    "source_run": "20260918T200909Z-2b3a45f0",
+    "benchmark_id": "benchmark-20260918T214616Z",
+    "benchmark_commit": "0a1dd1c",
+    "benchmark_code_sha256": "afaf79931840680103c6d624ce067621cc2ba7c9ca47fb813de083341cbf2035",
+    "benchmark_kernel_sha256": "4e9603d221056954336ee8187635f012841e830f7c0c18641fa779ae834af1eb",
+    "implementation_commit": "10be09c9b098ed2e37155660e5b8394b2c0fcd5c",
+    "calls": {
+      "offline": "fc-01M2V8GGV3S8SC7DHZ2GC98W1R",
+      "online": "fc-01M2V8GH4QWNFQ0R4E3YHEMFVT"
+    },
+    "monitor_call_id": "fc-01M2V8GHE588Y68ZTH147VK55J",
+    "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/parallel-20260918T215904Z-c79fc1"
+  },
+  "verification": {
+    "verified_at_utc": "2026-09-18T22:03:11.138523+00:00",
+    "run_id": "parallel-20260918T215904Z-c79fc1",
+    "imported_frozen_days": 110,
+    "imported_through_date": 1489,
+    "online_matches_gpu_benchmark_dates": [
+      1380,
+      1381,
+      1382
+    ],
+    "continued_frozen_matches_original_dates": [
+      1490,
+      1491
+    ],
+    "predictions_identical": true
+  },
+  "handoff": {
+    "at_utc": "2026-09-18T22:03:42.694300+00:00",
+    "stopped_calls": {
+      "monitor": "fc-01M2V40A8R0Z0S2QEJ6EYFBZZ0",
+      "gpu": "fc-01M2V292F49YDZ1KSKJ2NS6M0J"
+    },
+    "reason": "Replaced by verified independent replay jobs; original data and checkpoints retained",
+    "replacement_run": "parallel-20260918T215904Z-c79fc1"
+  },
+  "status_at_verification": {
+    "offline": {
+      "phase": "offline",
+      "replay_days_completed": 117,
+      "starting_date": 1497
+    },
+    "online": {
+      "phase": "online",
+      "replay_days_completed": 8,
+      "starting_date": 1388
+    }
+  }
+}
