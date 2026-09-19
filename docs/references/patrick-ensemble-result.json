@@ -1,0 +1,79 @@
+{
+  "run_id": "ensemble-20260919T030841Z",
+  "source_commit": "e6a222507e06b25b5d3d3db8cee73c0238310752",
+  "code_sha256": "1e098cde0d446c0588bdfb5b49b02da73f653a60a118c2bcbc30c77ccf564ff3",
+  "status": "complete",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "training_epochs": 5,
+  "scored_dates": [
+    1500,
+    1698
+  ],
+  "replay_dates": [
+    1380,
+    1698
+  ],
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-overview",
+  "replay_calls": {
+    "replay_offline": "fc-01M2WCR4WA1G722K80E6ZM2SXM",
+    "replay_online": "fc-01M2WCR74AN28XK6HVATHE37Y0"
+  },
+  "results": {
+    "offline": {
+      "denominator": 10495085.4227218,
+      "final_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+      "initial_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+      "reused_days": 0,
+      "score": 0.014128878395570421,
+      "scored_rows": 7397456,
+      "seconds": 5471.403407767998,
+      "sse": 10346801.63703304
+    },
+    "online": {
+      "denominator": 10495085.4227218,
+      "final_weights_sha256": "a2e1ff43443dd21e6533fb2e2b823b30d625ec6e578fb84324f8351f5dcad7ce",
+      "initial_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+      "reused_days": 0,
+      "score": 0.014999669700993978,
+      "scored_rows": 7397456,
+      "seconds": 12455.712672698992,
+      "sse": 10337662.607897256
+    }
+  },
+  "online_update_count": 318,
+  "online_gain": 0.0008707913054235572,
+  "single_seed_comparison": {
+    "offline": {
+      "r2": 0.01106253932361878,
+      "ensemble_gain": 0.0030663390719516403
+    },
+    "online": {
+      "r2": 0.012604828796967229,
+      "ensemble_gain": 0.00239484090402675
+    }
+  },
+  "verification": {
+    "same_initial_weights": true,
+    "frozen_weights_unchanged": true,
+    "same_scored_rows_and_energy": true
+  },
+  "scope": "Fixed-budget local reconstruction; no claim of reproduced leaderboard score."
+}

@@ -8,6 +8,35 @@ dataset hashes, Modal call IDs, the successful 93-test remote gate, exact L4
 recovery rehearsal, and first committed training checkpoint. Deployed training
 code is frozen at `e6a2225`; subsequent documentation commits do not change it.
 
+## Completed result
+
+All 17 seeds completed five epochs, and both 319-day replays finished successfully.
+Scoring dates 1500–1698 contains 7,397,456 rows with identical target energy in
+both modes. Initial ensemble weights match, frozen weights remain unchanged,
+and the online replay performed 318 delayed daily updates.
+
+| Model | Frozen R² | Online R² |
+|---|---:|---:|
+| Original seed 0 | 0.01106254 | 0.01260483 |
+| 17-seed ensemble | 0.01412888 | 0.01499967 |
+
+Ensembling adds 0.00306634 frozen R² and 0.00239484 online R². Online learning
+adds 0.00087079 within the ensemble. These are fixed-budget local comparisons;
+they do not establish the best hyperparameters or reproduce a leaderboard score.
+The online/frozen rolling gap varies over time, including periods where updates
+hurt despite the positive pooled gain.
+
+Frozen replay took 91.2 minutes; online replay took 207.6 minutes. Both ran in
+parallel. These are replay function runtimes, not total experiment wall time.
+The run has no remaining training or replay workers.
+
+See the [result record](references/patrick-ensemble-result.json),
+[rolling-window data](references/patrick-ensemble-online-learning.csv), and chart:
+
+![17-seed frozen versus online replay](references/patrick-ensemble-online-learning.png)
+
+## Protocol and execution
+
 `configs/patrick_ensemble.yaml` keeps the completed single-seed experiment's model,
 five fixed epochs, preprocessing, optimizer settings, and dates. It enables seeds
 0–16 and stacked ensemble inference. Seed 0 is reused from the original **offline
