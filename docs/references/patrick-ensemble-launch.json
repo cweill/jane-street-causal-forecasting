@@ -1,0 +1,228 @@
+{
+  "run_id": "ensemble-20260919T030841Z",
+  "source_run": "20260918T200909Z-2b3a45f0",
+  "source_commit": "e6a222507e06b25b5d3d3db8cee73c0238310752",
+  "code_sha256": "1e098cde0d446c0588bdfb5b49b02da73f653a60a118c2bcbc30c77ccf564ff3",
+  "prepare_call_id": "fc-01M2VT79Q1EZPKD5CX6KZEANGZ",
+  "prepare_result": {
+    "status": "prepared",
+    "run_id": "ensemble-20260919T030841Z",
+    "cache_reused": true,
+    "source_seed_zero_verified": true,
+    "code_sha256": "1e098cde0d446c0588bdfb5b49b02da73f653a60a118c2bcbc30c77ccf564ff3"
+  },
+  "rehearsal_call_id": "fc-01M2VV18Q60KZHTFCW63TQT7W3",
+  "rehearsal_result": {
+    "status": "passed",
+    "gpu": "NVIDIA L4",
+    "dates": [
+      1377,
+      1378,
+      1379
+    ],
+    "epochs": 2,
+    "resume_weights_history_exact": true,
+    "code_sha256": "1e098cde0d446c0588bdfb5b49b02da73f653a60a118c2bcbc30c77ccf564ff3"
+  },
+  "seed_1_call_id": "fc-01M2VV3SWT67T1S8WM1K348M9Z",
+  "first_seed_checkpoint": {
+    "call_id": "fc-01M2VV3SWT67T1S8WM1K348M9Z",
+    "checkpoint_written": true,
+    "completed_batches": 25,
+    "epochs_completed": 0,
+    "phase": "training",
+    "seed": 1,
+    "total_batches": 6900,
+    "wall_seconds": 146.37564718000002,
+    "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-01"
+  },
+  "coordinator_call_id": "fc-01M2VVA4PVFS48M9SCF46MN0TN",
+  "app": "patrick-seed-ensemble",
+  "app_url": "https://modal.com/apps/cweill/main/deployed/patrick-seed-ensemble",
+  "output_volume": "janestreet-patrick-ensemble",
+  "output_directory": "/runs/ensemble-20260919T030841Z",
+  "overview_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-overview",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "reused_seeds": [
+    0
+  ],
+  "max_training_gpus": 4,
+  "training_epochs": 5,
+  "learning_rate": 0.0005,
+  "dataset_sha256": "915138f71873ba970eae0936a21a65b5ef0c19025a99392f89aa319cff2be79b",
+  "config_sha256": "b7f1b1d18a02df4877222f8071bc4995b508420a66c47fd230d3ed80f04b09aa",
+  "source_seed_zero_weights_sha256": "85e6369bafa7ae939284b6a44ced9e7b25027a465b127bfc0d148679db8b88fa",
+  "dates": {
+    "training": [
+      0,
+      1379
+    ],
+    "online_warmup": [
+      1380,
+      1499
+    ],
+    "scored": [
+      1500,
+      1698
+    ]
+  },
+  "gate": {
+    "passed": true,
+    "output": "........................................................................ [ 77%]\n.....................                                                    [100%]\n93 passed in 17.29s\n"
+  },
+  "ci_url": "https://github.com/cweill/janestreet-repro/actions/runs/35417713781",
+  "cache_prefetch_note": "Read-only concurrent file prefetch on the preparation, rehearsal, and seed 1, 3, and 4 training containers accelerated cold reads. All original checksum checks still ran; no model, data, configuration, or source changes.",
+  "training_call_ids": {
+    "seed_1": "fc-01M2VV3SWT67T1S8WM1K348M9Z",
+    "seed_10": "fc-01M2VVBN0TVFZ4DRNSMM59WTQA",
+    "seed_11": "fc-01M2VVBRHN190RT1CTD97N5Q48",
+    "seed_12": "fc-01M2VVBW2376P2HBP8JED46KAT",
+    "seed_13": "fc-01M2VVBZA2PBD5AGZYK9CN8M0B",
+    "seed_14": "fc-01M2VVC2XQQP640AGQXR0KRCFF",
+    "seed_15": "fc-01M2VVC6ENAPNVB6FAWSA9JJM4",
+    "seed_16": "fc-01M2VVC9T6XMJ9HMZJE3ZY5WTY",
+    "seed_2": "fc-01M2VVAR025DE24PBS9ME5T4WB",
+    "seed_3": "fc-01M2VVAW5X5R59471AV1G64PH5",
+    "seed_4": "fc-01M2VVAZGM0H9253EP6ZYQEEE2",
+    "seed_5": "fc-01M2VVB2WDHF1RQE3KG6CFA02R",
+    "seed_6": "fc-01M2VVB7A2XG0N1F6XNHXN52PA",
+    "seed_7": "fc-01M2VVBAVD9FZXJ10CB0GV01ZR",
+    "seed_8": "fc-01M2VVBEA0CFSE337VV31KA8XJ",
+    "seed_9": "fc-01M2VVBHQ5MVNF963YY4V4ASJY"
+  },
+  "first_wave_observation": [
+    {
+      "call_id": "fc-01M2VV3SWT67T1S8WM1K348M9Z",
+      "checkpoint_written": true,
+      "completed_batches": 600,
+      "epochs_completed": 0,
+      "phase": "training",
+      "seed": 1,
+      "total_batches": 6900,
+      "wall_seconds": 519.064542611,
+      "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-01"
+    },
+    {
+      "call_id": "fc-01M2VVAR025DE24PBS9ME5T4WB",
+      "checkpoint_written": true,
+      "completed_batches": 325,
+      "epochs_completed": 0,
+      "phase": "training",
+      "seed": 2,
+      "total_batches": 6900,
+      "wall_seconds": 291.094203075,
+      "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-02"
+    },
+    {
+      "call_id": "fc-01M2VVAW5X5R59471AV1G64PH5",
+      "checkpoint_written": true,
+      "completed_batches": 150,
+      "epochs_completed": 0,
+      "phase": "training",
+      "seed": 3,
+      "total_batches": 6900,
+      "wall_seconds": 292.992214144,
+      "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-03"
+    },
+    {
+      "call_id": "fc-01M2VVAZGM0H9253EP6ZYQEEE2",
+      "checkpoint_written": true,
+      "completed_batches": 175,
+      "epochs_completed": 0,
+      "phase": "training",
+      "seed": 4,
+      "total_batches": 6900,
+      "wall_seconds": 281.418182614,
+      "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-04"
+    }
+  ],
+  "worker_stats": {
+    "num_running_inputs": 4,
+    "num_total_runners": 4,
+    "backlog": 12
+  },
+  "observed_at_utc": "2026-09-19T03:33:57.777934+00:00",
+  "controller_status": {
+    "completed_seeds": [
+      0
+    ],
+    "failed_seeds": {},
+    "phase": "training",
+    "unfinished_seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-overview"
+  },
+  "wandb_observation": [
+    {
+      "id": "ensemble-20260919T030841Z-seed-01",
+      "url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-01",
+      "state": "running",
+      "train/batch": 599,
+      "train/unbalanced_loss": 0.9732087547450556,
+      "train/responder_6_r2": 0.016456934302749637
+    },
+    {
+      "id": "ensemble-20260919T030841Z-overview",
+      "url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-overview",
+      "state": "running"
+    },
+    {
+      "id": "ensemble-20260919T030841Z-seed-03",
+      "url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-03",
+      "state": "running",
+      "train/batch": 149,
+      "train/unbalanced_loss": 0.9973439341958206,
+      "train/responder_6_r2": 0.0010241858364551382
+    },
+    {
+      "id": "ensemble-20260919T030841Z-seed-02",
+      "url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-02",
+      "state": "running",
+      "train/batch": 324,
+      "train/unbalanced_loss": 0.989951325515558,
+      "train/responder_6_r2": 0.004051747568432296
+    },
+    {
+      "id": "ensemble-20260919T030841Z-seed-04",
+      "url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-04",
+      "state": "running",
+      "train/batch": 174,
+      "train/unbalanced_loss": 0.9827580782624086,
+      "train/responder_6_r2": 0.001491137732416714
+    }
+  ]
+}

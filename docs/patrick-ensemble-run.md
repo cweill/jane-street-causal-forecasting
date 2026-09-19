@@ -1,5 +1,13 @@
 # Patrick 17-seed run
 
+Run `ensemble-20260919T030841Z` was launched on September 18, 2026 (Pacific time).
+Follow the [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-overview)
+or [seed 1's training charts](https://wandb.ai/cweill-self/janestreet-repro/runs/ensemble-20260919T030841Z-seed-01).
+The [launch record](references/patrick-ensemble-launch.json) preserves source and
+dataset hashes, Modal call IDs, the successful 93-test remote gate, exact L4
+recovery rehearsal, and first committed training checkpoint. Deployed training
+code is frozen at `e6a2225`; subsequent documentation commits do not change it.
+
 `configs/patrick_ensemble.yaml` keeps the completed single-seed experiment's model,
 five fixed epochs, preprocessing, optimizer settings, and dates. It enables seeds
 0–16 and stacked ensemble inference. Seed 0 is reused from the original **offline
@@ -42,7 +50,7 @@ Seed 0's historical raw diagnostics are unavailable; its existing run is linked.
 The overview run logs ensemble completion and uses separate `online/date_id` and
 `offline/date_id` axes for matching calendar dates.
 
-At the observed single-model rate, four waves take roughly 4.5–5 hours of offline
-training, subject to cache verification, Modal capacity, and I/O. Matched replay
+The first seed's checkpoint intervals suggest roughly 5–6 hours for four waves of
+offline training, subject to cache verification, Modal capacity, and I/O. Matched replay
 adds time and includes daily checkpoint storage excluded from the scaling probe.
 No epoch selection or hyperparameter change is made using the scored period.

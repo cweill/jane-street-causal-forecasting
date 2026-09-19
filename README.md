@@ -25,6 +25,9 @@ Patrick's optional [stacked ensemble inference](docs/stacked-ensemble-inference.
 batches model weights and GRU states across seeds while retaining separate online optimizers.
 The [scaling profile](docs/patrick-scaling-profile.md) separates timestamp inference,
 daily updates, and preparation costs for 1, 4, and 17 models on an L4.
+The [17-seed ensemble runbook](docs/patrick-ensemble-run.md) describes verified
+seed-0 reuse, four concurrent training GPUs, recovery checkpoints, and automatic
+matched frozen/online replay.
 
 ## Run locally
 
