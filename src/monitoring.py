@@ -38,6 +38,17 @@ def training_events(saved, *, days_per_epoch, epochs):
             metrics, "train/epoch_mean_unbalanced_loss", record.get("mean_unbalanced_loss")
         )
         _optional_diagnostic(metrics, "train/epoch_responder_6_r2", record.get("responder_6_r2"))
+        if "validation" in record:
+            validation = record["validation"]
+            metrics["train/batch"] = number * days_per_epoch
+            metrics["val/epoch"] = number
+            _optional_diagnostic(metrics, "val/responder_6_r2", validation["r2"])
+            for key, name in (
+                ("sse", "sse"),
+                ("denominator", "denominator"),
+                ("rows", "scored_rows"),
+            ):
+                _optional_diagnostic(metrics, f"val/{name}", validation[key])
         events.append(
             {
                 "step": 2 * number * days_per_epoch + 1,

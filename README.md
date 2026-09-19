@@ -28,6 +28,9 @@ daily updates, and preparation costs for 1, 4, and 17 models on an L4.
 The [17-seed ensemble runbook](docs/patrick-ensemble-run.md) describes verified
 seed-0 reuse, four concurrent training GPUs, recovery checkpoints, and automatic
 matched frozen/online replay.
+For future development runs, [epoch-level validation](docs/patrick-epoch-validation.md)
+logs held-out frozen-model R² to W&B and saves each epoch's checkpoint using an
+earlier chronological split.
 
 ## Run locally
 

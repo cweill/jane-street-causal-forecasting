@@ -122,8 +122,10 @@ def train_model(
     checkpoint_path=None,
     checkpoint_every=25,
     progress=None,
+    validation=None,
 ):
     training = PatrickTrainingConfig() if training is None else training
+    validation_identity = None if validation is None else validation.verify(prepared)
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
     model = PatrickYam(model_config, prepared.features.vocab_sizes).to(training.device)
@@ -146,7 +148,10 @@ def train_model(
     diagnostics = []
     if checkpoint is not None and checkpoint.exists():
         saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
-        if saved["signature"] != signature:
+        if (
+            saved["signature"] != signature
+            or saved.get("validation_identity") != validation_identity
+        ):
             raise ValueError("training checkpoint identity mismatch")
         model.load_state_dict(saved["model"])
         optimizer.load_state_dict(saved["optimizer"])
@@ -157,6 +162,17 @@ def train_model(
         torch.set_rng_state(saved["torch_rng"])
         if training.device == "cuda":
             torch.cuda.set_rng_state_all(saved["cuda_rng"])
+        if validation is not None and progress is not None:
+            # Recover an epoch artifact/log if interruption followed the durable
+            # checkpoint but preceded its observer. Identity was verified above.
+            progress(
+                {
+                    "completed_batches": completed,
+                    "total_batches": len(prepared.dates) * training.epochs,
+                    "epochs_completed": epoch,
+                    "checkpoint_written": True,
+                }
+            )
     while epoch < training.epochs:
         if not order:
             order = rng.permutation(prepared.dates).tolist()
@@ -197,6 +213,10 @@ def train_model(
                     "note": "Detached loss balancing makes this unsuitable for score/early stopping.",
                 }
             )
+            if validation is not None:
+                from src.training.validation import evaluate_validation
+
+                history[-1]["validation"] = evaluate_validation(model, validation)
             epoch += 1
             position, order, losses = 0, [], []
             diagnostics = []
@@ -204,6 +224,7 @@ def train_model(
             atomic_torch_save(
                 {
                     "signature": signature,
+                    "validation_identity": validation_identity,
                     "model": model.state_dict(),
                     "optimizer": optimizer.state_dict(),
                     "epoch": epoch,
