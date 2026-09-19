@@ -21,6 +21,13 @@ from src.reproduction import weights_fingerprint
 from src.training.checkpoints import load_replay_checkpoint, save_replay_checkpoint
 
 
+def ensemble_fingerprint(models):
+    fingerprints = [weights_fingerprint(model) for model in models]
+    if len(fingerprints) == 1:
+        return fingerprints[0]
+    return hashlib.sha256(json.dumps(fingerprints).encode()).hexdigest()
+
+
 def import_frozen_prefix(source, destination, checkpoint, dates, scored, signature, initial_hash):
     """Copy an immutable committed prefix; publish its completion marker last.
 
@@ -147,7 +154,9 @@ def run_replay_mode(
     if fast:
         source = CachedDaySource(source)
     initial = load_predictor(checkpoint, device)
-    initial_hash = weights_fingerprint(initial.models[0])
+    initial_hash = ensemble_fingerprint(initial.models)
+    if source_prefix is not None and len(initial.models) != 1:
+        raise ValueError("frozen prefix import requires the original single model")
     reused_days = 0
     if source_prefix is not None:
         reused_days = import_frozen_prefix(
@@ -208,7 +217,7 @@ def run_replay_mode(
     energy = sum(r["primary"]["denominator"] for r in records)
     if energy <= 0:
         raise ValueError("primary score has zero denominator")
-    final_hash = weights_fingerprint(predictor.models[0])
+    final_hash = ensemble_fingerprint(predictor.models)
     if mode == "offline" and final_hash != initial_hash:
         raise ValueError("frozen replay mutated weights")
     for update in predictor.update_log:

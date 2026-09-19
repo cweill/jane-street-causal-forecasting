@@ -26,22 +26,11 @@ CAUSAL_TESTS = [
     "test_parallel_replay.py",
     "test_stacked_ensemble.py",
     "test_scaling_profile.py",
+    "test_ensemble_run.py",
 ]
 
 
-def safety_gate():
-    command = [
-        sys.executable,
-        "-m",
-        "pytest",
-        "-q",
-        *[str(ROOT / "tests" / t) for t in CAUSAL_TESTS],
-    ]
-    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
-    if result.returncode:
-        raise RuntimeError(
-            "causal/protocol gate failed; experiments blocked\n" + result.stdout + result.stderr
-        )
+def source_fingerprint():
     files = sorted(
         [
             *ROOT.glob("src/**/*.py"),
@@ -58,9 +47,25 @@ def safety_gate():
     for file in files:
         digest.update(str(file.relative_to(ROOT)).encode())
         digest.update(file.read_bytes())
+    return digest.hexdigest()
+
+
+def safety_gate():
+    command = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        *[str(ROOT / "tests" / t) for t in CAUSAL_TESTS],
+    ]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    if result.returncode:
+        raise RuntimeError(
+            "causal/protocol gate failed; experiments blocked\n" + result.stdout + result.stderr
+        )
     return {
         "passed": True,
-        "code_and_tests_sha256": digest.hexdigest(),
+        "code_and_tests_sha256": source_fingerprint(),
         "command": command,
         "output": result.stdout,
     }
