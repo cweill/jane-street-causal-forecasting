@@ -31,6 +31,9 @@ matched frozen/online replay.
 For future development runs, [epoch-level validation](docs/patrick-epoch-validation.md)
 logs held-out frozen-model R² to W&B and saves each epoch's checkpoint using an
 earlier chronological split.
+The [online sensitivity study](docs/patrick-online-sensitivity.md) compares three
+learning rates and two Adam reset policies against a fixed three-seed frozen baseline
+on an earlier development interval.
 
 ## Run locally
 

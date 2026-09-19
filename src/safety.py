@@ -28,6 +28,7 @@ CAUSAL_TESTS = [
     "test_scaling_profile.py",
     "test_ensemble_run.py",
     "test_epoch_validation.py",
+    "test_online_sweep.py",
 ]
 
 
