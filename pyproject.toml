@@ -30,3 +30,6 @@ addopts = "-ra"
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint.isort]
+known-third-party = ["wandb"]

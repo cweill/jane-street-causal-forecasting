@@ -60,7 +60,7 @@ down after use. This worker saves final models and resumable training checkpoint
 it logs epoch validation but does not archive every epoch's model separately.
 
 W&B project: `cweill-self/janestreet-repro`. Each seed has its own training run;
-the overview logs each trial's daily, cumulative, scored cumulative and rolling R²
+the overview logs each trial's daily, scored cumulative and rolling R²
 against its own explicit `date_id` axis. The final overview includes a seven-curve
 plot and complete result table. Output volume: `janestreet-patrick-ol-sweep`.
 
@@ -68,3 +68,16 @@ Tests cover unchanged initial weights and first-day predictions, delayed update
 timing, frozen weights, daily-reset behavior, resume equivalence under future-label
 poisoning, rejected leaked training boundaries, cache corruption/source changes,
 and mismatched comparison provenance. These supplement the existing causal tests.
+
+## Launch record
+
+Run `ol-sweep-20260919T194601Z` was launched from commit `cfdecf6` after 123 local
+tests passed and all five deliberate leakage mutations were detected. The initial
+observed phase was CPU preparation; no training or sweep results are claimed yet.
+The deployed causal gate subsequently passed all 104 selected tests in 55 seconds
+with the exact launch source hash. A later import-formatting/ruff-classification
+fix on `main` is not redeployed into this immutable run.
+
+- [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-sweep-20260919T194601Z-overview)
+- [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-ol-sweep)
+- [Immutable launch identity and durable call IDs](references/patrick-online-sensitivity-launch.json)

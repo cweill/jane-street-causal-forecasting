@@ -1,0 +1,22 @@
+{
+  "run_id": "ol-sweep-20260919T194601Z",
+  "dataset_sha256": "915138f71873ba970eae0936a21a65b5ef0c19025a99392f89aa319cff2be79b",
+  "code_sha256": "01fc33af009c64adf535485a4a103d1850a58a59364445a9238c3f362c2152a7",
+  "source_commit": "cfdecf6290af69f9bd4951a7ef952fa4cccfdb79",
+  "controller_call_id": "fc-01M2XK8KAMQ591QYBKSA7ERQBW",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ol-sweep-20260919T194601Z-overview",
+  "app": "patrick-ol-sweep",
+  "volume": "janestreet-patrick-ol-sweep",
+  "status_at_recording": "preparing",
+  "prepare_call_id": "fc-01M2XK95K8BJFEQV3XT6S24WXE",
+  "local_validation": {
+    "tests_passed": 123,
+    "leakage_mutations_detected": 5
+  },
+  "remote_causal_gate": {
+    "passed": true,
+    "tests_passed": 104,
+    "seconds": 55.0,
+    "code_sha256": "01fc33af009c64adf535485a4a103d1850a58a59364445a9238c3f362c2152a7"
+  }
+}

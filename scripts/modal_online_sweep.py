@@ -438,6 +438,7 @@ def coordinate(run_id, digest, code_sha, commit):
     import time
 
     import wandb
+
     from src.artifacts import write_json
     from src.config import load_config
     from src.cv import configured_folds
