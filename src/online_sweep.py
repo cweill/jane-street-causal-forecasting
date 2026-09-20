@@ -167,7 +167,9 @@ def run_trial(source, base, directory, trial, fold, *, device, provenance, progr
     return result
 
 
-def summarize_trials(directory, trials, fold, window=20):
+def summarize_trials(
+    directory, trials, fold, window=20, *, trial_directories=None, expected_provenance=None
+):
     validate_fold(fold)
     directory = Path(directory)
     if (
@@ -176,16 +178,26 @@ def summarize_trials(directory, trials, fold, window=20):
     ):
         raise ValueError("distinct trials and exactly one frozen baseline required")
     baseline = next(t for t in trials if t.learning_rate is None)
-    frozen = json.loads((directory / baseline.name / "result.json").read_text())
+    roots = (
+        {t.name: directory / t.name for t in trials}
+        if trial_directories is None
+        else {k: Path(v) for k, v in trial_directories.items()}
+    )
+    names = {t.name for t in trials}
+    if set(roots) != names or (
+        expected_provenance is not None and set(expected_provenance) != names
+    ):
+        raise ValueError("paired source/provenance coverage mismatch")
+    frozen = json.loads((roots[baseline.name] / "result.json").read_text())
     frozen_identity = json.loads(
-        (directory / baseline.name / baseline.mode / "identity.json").read_text()
+        (roots[baseline.name] / baseline.mode / "identity.json").read_text()
     )
     first = pl.read_parquet(
-        directory / baseline.name / baseline.mode / f"date_{fold.replay_dates[0]}.parquet"
+        roots[baseline.name] / baseline.mode / f"date_{fold.replay_dates[0]}.parquet"
     )
     rows, curves = [], []
     for trial in trials:
-        root = directory / trial.name
+        root = roots[trial.name]
         result = json.loads((root / "result.json").read_text())
         identity = json.loads((root / trial.mode / "identity.json").read_text())
         if (
@@ -194,7 +206,11 @@ def summarize_trials(directory, trials, fold, window=20):
             or identity["scored_dates"] != list(fold.validation_dates)
             or identity["checkpoint_weights_sha256"] != frozen_identity["checkpoint_weights_sha256"]
             or {k: v for k, v in identity["provenance"].items() if k != "trial"}
-            != {k: v for k, v in frozen_identity["provenance"].items() if k != "trial"}
+            != (
+                expected_provenance[trial.name]
+                if expected_provenance is not None
+                else {k: v for k, v in frozen_identity["provenance"].items() if k != "trial"}
+            )
             or any(
                 result[k] != frozen[k]
                 for k in ("initial_weights_sha256", "denominator", "scored_rows")
@@ -218,6 +234,7 @@ def summarize_trials(directory, trials, fold, window=20):
             )
         )
     table = pl.concat(curves)
+    directory.mkdir(parents=True, exist_ok=True)
     table.write_csv(directory / "rolling_comparison.csv")
     import matplotlib
 

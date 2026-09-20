@@ -34,6 +34,8 @@ earlier chronological split.
 The [online sensitivity study](docs/patrick-online-sensitivity.md) compares three
 learning rates and two Adam reset policies against a fixed three-seed frozen baseline
 on an earlier development interval.
+The [lower-rate refinement](docs/patrick-online-refinement.md) reuses those models
+and baselines to evaluate four additional rates with scored time-block diagnostics.
 
 ## Run locally
 
