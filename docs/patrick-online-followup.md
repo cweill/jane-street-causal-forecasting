@@ -64,3 +64,8 @@ reproduce Patrick's exact score. The interval was previously inspected.
 - [Rolling data](references/patrick-online-followup-comparison.csv)
 
 ![17-model follow-up comparison](references/patrick-online-followup-comparison.png)
+
+The two-curve version retains frozen and the best tested 17-model online setting,
+LR 1e-4, with the same rolling values and scoring boundary:
+[PNG](references/patrick-online-best-vs-frozen.png) ·
+[SVG](references/patrick-online-best-vs-frozen.svg).
