@@ -42,6 +42,9 @@ Implementation: `src/online_refinement.py`, `src/online_sweep.py` and
 Run `ol-refine-20260920T075437Z` launched from commit `2cb18ef`. Before launch,
 all 126 local tests passed, all five leakage mutations were detected, and the
 original archived runtime matched all 27 checked files and five replay definitions.
+The remote causal gate passed 107 tests and CI passed. All four GPU workers started,
+passed exact first-day parity against the reused frozen run on date 1060, and had
+completed 1–3 replay days when verified. Results remain pending.
 
 - [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-refine-20260920T075437Z-overview)
 - [Launch identity and durable controller call](references/patrick-online-refinement-launch.json)
