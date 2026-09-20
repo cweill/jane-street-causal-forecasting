@@ -37,3 +37,30 @@ local tests passed and all five deliberate leakage mutations were detected.
 - [W&B comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z)
 - [Launch identity and durable controller call](references/patrick-online-followup-launch.json)
 - [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-online-followup)
+
+## Completed result
+
+The 17-model replay completed all 319 dates. Both Modal and W&B report completion,
+and no Modal containers remained active when checked. All comparisons share the
+same initial tensor fingerprint, 7,397,456 scored rows and weighted target energy
+10,495,085.4227218. Both online versions recorded 318 correctly delayed updates.
+
+| Setting | Pooled R² on dates 1500–1698 |
+|---|---:|
+| Frozen | 0.01412888 |
+| Online 5e-4 | 0.01499967 |
+| Online 1e-4 | **0.01941540** |
+
+Lowering the learning rate adds **0.00441573 R²** relative to the previous online
+run. The new online improvement over frozen is **0.00528652 R²**. The replay took
+11,665 seconds (194.4 minutes). The rolling plot shows improvement across much of
+the scored interval, including the late decline in frozen performance.
+
+This strengthens the evidence that the original online learning rate was too large
+for this reconstruction. It does not establish a globally optimal learning rate or
+reproduce Patrick's exact score. The interval was previously inspected.
+
+- [Verified result summary](references/patrick-online-followup-result.json)
+- [Rolling data](references/patrick-online-followup-comparison.csv)
+
+![17-model follow-up comparison](references/patrick-online-followup-comparison.png)

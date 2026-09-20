@@ -1,0 +1,44 @@
+{
+  "delta_from_frozen": 0.005286523781521613,
+  "delta_from_previous_online": 0.004415732476098055,
+  "frozen": {
+    "denominator": 10495085.4227218,
+    "final_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+    "initial_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+    "reused_days": 0,
+    "score": 0.014128878395570421,
+    "scored_rows": 7397456,
+    "seconds": 5471.403407767998,
+    "sse": 10346801.63703304,
+    "update_days": 0
+  },
+  "note": "Follow-up on a previously inspected interval; not an untouched test.",
+  "online_1e-4": {
+    "denominator": 10495085.4227218,
+    "final_weights_sha256": "a0f4dca0a887faea48b6069b2519269779a5371f7d4127d670d7e9a26469152e",
+    "initial_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+    "reused_days": 0,
+    "score": 0.019415402177092034,
+    "scored_rows": 7397456,
+    "seconds": 11665.170072533007,
+    "sse": 10291319.11835672,
+    "update_days": 318
+  },
+  "online_5e-4": {
+    "denominator": 10495085.4227218,
+    "final_weights_sha256": "a2e1ff43443dd21e6533fb2e2b823b30d625ec6e578fb84324f8351f5dcad7ce",
+    "initial_weights_sha256": "861821197629ca23387cf0a0c07914426308f4ebe87828b21582a134b458c43a",
+    "reused_days": 0,
+    "score": 0.014999669700993978,
+    "scored_rows": 7397456,
+    "seconds": 12455.712672698992,
+    "sse": 10337662.607897256,
+    "update_days": 318
+  },
+  "status": "complete",
+  "run_id": "ol-followup-20260920T070707Z",
+  "scored_dates": [
+    1500,
+    1698
+  ]
+}
