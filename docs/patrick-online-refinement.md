@@ -38,3 +38,11 @@ new jobs run concurrently, subject to GPU availability and verification overhead
 Implementation: `src/online_refinement.py`, `src/online_sweep.py` and
 `scripts/modal_online_refinement.py`. Output volume:
 `janestreet-patrick-online-refinement`.
+
+Run `ol-refine-20260920T075437Z` launched from commit `2cb18ef`. Before launch,
+all 126 local tests passed, all five leakage mutations were detected, and the
+original archived runtime matched all 27 checked files and five replay definitions.
+
+- [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-refine-20260920T075437Z-overview)
+- [Launch identity and durable controller call](references/patrick-online-refinement-launch.json)
+- [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-online-refinement)

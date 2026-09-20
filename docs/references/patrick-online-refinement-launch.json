@@ -1,0 +1,43 @@
+{
+  "run_id": "ol-refine-20260920T075437Z",
+  "source_commit": "2cb18ef337bfc6d2688ad44503644d76fac27b0c",
+  "code_sha256": "db0d073c0756172a186897768482b5b43f4a496f02fde315225591cd26fe6a58",
+  "original_run": "ol-sweep-20260919T194601Z",
+  "new_learning_rates": [
+    1e-05,
+    3e-05,
+    5e-05,
+    0.0002
+  ],
+  "reset_daily_optimizer": false,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "training_dates": [
+    0,
+    1059
+  ],
+  "replay_dates": [
+    1060,
+    1379
+  ],
+  "scored_dates": [
+    1180,
+    1379
+  ],
+  "max_gpus": 4,
+  "offline_training": false,
+  "controller_call_id": "fc-01M2YWYP7ZNE5C7YR5WP8MWPV3",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ol-refine-20260920T075437Z-overview",
+  "app": "patrick-online-refinement",
+  "output_volume": "janestreet-patrick-online-refinement",
+  "local_validation": {
+    "tests_passed": 126,
+    "deliberate_leakage_mutations_detected": 5,
+    "archived_runtime_files_matched": 27,
+    "archived_replay_definitions_matched": 5
+  },
+  "status_at_recording": "launched"
+}
