@@ -30,3 +30,10 @@ about 3.5 hours; cached input may change runtime, so that is a reference, not an
 
 App: `patrick-online-followup`. Output volume: `janestreet-patrick-online-followup`.
 The existing experiment artifacts and default model configurations remain immutable.
+
+Run `ol-followup-20260920T070707Z` launched from commit `8f2c064` after all 125
+local tests passed and all five deliberate leakage mutations were detected.
+
+- [W&B comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z)
+- [Launch identity and durable controller call](references/patrick-online-followup-launch.json)
+- [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-online-followup)

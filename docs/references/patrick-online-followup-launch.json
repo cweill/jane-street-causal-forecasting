@@ -1,0 +1,44 @@
+{
+  "run_id": "ol-followup-20260920T070707Z",
+  "source_commit": "8f2c064edc9a3a6878c027e3f28f5a5a08be517e",
+  "code_sha256": "a17b8890fec4d148d5aa03500a27f31fb76b6378a0c1b006eb48632c1a52caeb",
+  "original_run": "ensemble-20260919T030841Z",
+  "learning_rate": 0.0001,
+  "reset_daily_optimizer": false,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "replay_dates": [
+    1380,
+    1698
+  ],
+  "scored_dates": [
+    1500,
+    1698
+  ],
+  "controller_call_id": "fc-01M2YT7QQAG0SHYJDJ4QY21WCC",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z",
+  "app": "patrick-online-followup",
+  "output_volume": "janestreet-patrick-online-followup",
+  "local_validation": {
+    "tests_passed": 125,
+    "deliberate_leakage_mutations_detected": 5
+  },
+  "status_at_recording": "launched"
+}
