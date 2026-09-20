@@ -73,7 +73,7 @@ and mismatched comparison provenance. These supplement the existing causal tests
 
 Run `ol-sweep-20260919T194601Z` was launched from commit `cfdecf6` after 123 local
 tests passed and all five deliberate leakage mutations were detected. The initial
-observed phase was CPU preparation; no training or sweep results are claimed yet.
+observed phase was CPU preparation; the complete results are recorded below.
 The deployed causal gate subsequently passed all 104 selected tests in 55 seconds
 with the exact launch source hash. A later import-formatting/ruff-classification
 fix on `main` is not redeployed into this immutable run.
@@ -81,3 +81,44 @@ fix on `main` is not redeployed into this immutable run.
 - [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-sweep-20260919T194601Z-overview)
 - [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-ol-sweep)
 - [Immutable launch identity and durable call IDs](references/patrick-online-sensitivity-launch.json)
+
+## Completed results
+
+All three seeds completed five epochs, and all seven trials completed the 320-day
+replay. Scoring covers dates 1180–1379 (200 dates). The coordinator and W&B run
+finished successfully; no Modal containers remained active when checked.
+
+| Trial | Pooled R² | Difference from frozen |
+|---|---:|---:|
+| frozen | 0.01935094 | +0.00000000 |
+| lr_1e-4_persistent | 0.02405157 | +0.00470063 |
+| lr_1e-4_reset | 0.02395300 | +0.00460206 |
+| lr_5e-4_persistent | 0.01763681 | -0.00171413 |
+| lr_5e-4_reset | 0.01445205 | -0.00489889 |
+| lr_1e-3_persistent | 0.01243798 | -0.00691296 |
+| lr_1e-3_reset | 0.00595689 | -0.01339405 |
+
+All trials have identical initial tensor fingerprints, 7,457,472 scored rows and
+weighted target energy 10,547,832.643854462. Each online trial recorded 319 delayed
+daily updates; frozen recorded zero. The GPU recovery/parity rehearsal passed.
+Training took 47.8–52.2 minutes per seed; replay workers took 91.2–114.9 minutes
+each. These concurrent-worker runtimes are not a controlled inference speed benchmark.
+
+The 1e-4 learning rate improves pooled R² by 0.00470063 with persistent Adam and
+0.00460206 with daily resets. At that learning rate the reset-policy difference is
+only 0.00009857. Both larger learning rates underperform frozen on this split.
+The plot shows the low-rate benefit across much of the scored period, with a short
+interval around dates 1250–1265 where its rolling score is slightly below frozen.
+
+This supports learning-rate sensitivity in this reconstruction. It does not establish
+that 1e-4 generalizes to later dates, reproduce Patrick's private score, or isolate
+all other architecture/training differences. No follow-up GPU run was launched and
+no default configuration was changed. A next experiment can fix 1e-4 with persistent
+Adam and reuse the existing later-period ensemble checkpoint for a comparison on
+1500–1698; that interval has already been inspected, so it is follow-up evidence,
+not an untouched final test.
+
+- [Complete numerical results](references/patrick-online-sensitivity-result.json)
+- [Rolling values](references/patrick-online-sensitivity-rolling.csv)
+
+![All seven rolling comparisons](references/patrick-online-sensitivity-rolling.png)
