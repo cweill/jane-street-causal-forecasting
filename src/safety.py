@@ -31,6 +31,7 @@ CAUSAL_TESTS = [
     "test_online_sweep.py",
     "test_online_followup.py",
     "test_online_refinement.py",
+    "test_epoch_study.py",
 ]
 
 

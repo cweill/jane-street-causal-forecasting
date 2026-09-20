@@ -36,6 +36,8 @@ learning rates and two Adam reset policies against a fixed three-seed frozen bas
 on an earlier development interval.
 The [lower-rate refinement](docs/patrick-online-refinement.md) reuses those models
 and baselines to evaluate four additional rates with scored time-block diagnostics.
+The [epoch-budget study](docs/patrick-epoch-study.md) compares epochs three, four and
+five with a fixed online learning rate, reusing the epoch-five results.
 
 ## Run locally
 
