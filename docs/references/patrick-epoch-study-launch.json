@@ -1,0 +1,43 @@
+{
+  "run_id": "epoch-study-20260920T185609Z",
+  "source_commit": "32f722d046517ae67ae7291b0cd4b05f9f28c0ec",
+  "code_sha256": "a98fc474bea638e3913f226ab31d8f7abc14344d24f92d2b7083b732073caa0d",
+  "original_run": "ol-sweep-20260919T194601Z",
+  "captured_epochs": [
+    3,
+    4
+  ],
+  "reused_epoch": 5,
+  "online_learning_rate": 0.0001,
+  "reset_daily_optimizer": false,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "training_dates": [
+    0,
+    1059
+  ],
+  "replay_dates": [
+    1060,
+    1379
+  ],
+  "scored_dates": [
+    1180,
+    1379
+  ],
+  "max_training_gpus": 3,
+  "max_replay_gpus": 4,
+  "controller_call_id": "fc-01M302SZY49FJGSY1RQCDNMH53",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-study-20260920T185609Z-overview",
+  "app": "patrick-epoch-study",
+  "output_volume": "janestreet-patrick-epoch-study",
+  "local_validation": {
+    "tests_passed": 128,
+    "deliberate_leakage_mutations_detected": 5,
+    "archived_runtime_files_matched": 27,
+    "archived_replay_definitions_matched": 5
+  },
+  "status_at_recording": "launched"
+}

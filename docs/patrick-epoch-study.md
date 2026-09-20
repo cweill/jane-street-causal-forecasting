@@ -49,3 +49,11 @@ Configuration: `configs/patrick_epoch_study.yaml`. Implementation:
 took roughly 48–52 minutes for five epochs; this four-epoch run also includes cache
 verification and then roughly two hours of parallel replay. These are reference
 durations, not guaranteed completion times.
+
+Run `epoch-study-20260920T185609Z` launched from commit `32f722d` after all 128
+local tests passed, all five deliberate leakage mutations were detected, and the
+archived runtime comparison passed. Completed study results are not yet available.
+
+- [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-study-20260920T185609Z-overview)
+- [Launch identity and durable call ID](references/patrick-epoch-study-launch.json)
+- [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-epoch-study)
