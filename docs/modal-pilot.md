@@ -1,8 +1,7 @@
 # Modal GPU correctness pilot
 
-The first successful real-data run is recorded in the
-[Grigoreva correctness and runtime report](real-data-pilot-report.md).
-The same pilot also passed for [Patrick’s reconstruction](patrick-pilot-report.md).
+The successful real-data run is recorded in the
+[Patrick correctness and runtime report](patrick-pilot-report.md).
 
 The pilot uses the existing Modal profile and a dedicated `janestreet-repro-pilot`
 Volume. It launches an ephemeral App, not a scheduled or persistent deployment.
@@ -21,9 +20,6 @@ From the repository root, prepare a new slice (this runs the causal gate):
 TMPDIR=/tmp uv run --no-project --python 3.12 --with modal==1.5.5 \
   modal run scripts/modal_pilot.py --data artifacts/pilot-input.parquet
 
-# The same workload and checks, using Patrick’s reconstruction:
-TMPDIR=/tmp uv run --no-project --python 3.12 --with modal==1.5.5 \
-  modal run scripts/modal_pilot.py --data artifacts/pilot-input.parquet --method patrick
 ```
 
 The Modal SDK is installed in an isolated uv environment. The remote image uses
@@ -43,9 +39,7 @@ CUBLAS_WORKSPACE_CONFIG=:4096:8 .venv/bin/python -m scripts.real_data_pilot run 
 - One L4 GPU; one container; no automatic application retries.
 - Four CPU cores and 16 GiB host memory, each with an explicit limit.
 - 20-minute function execution timeout and separate 15-minute startup timeout.
-- One seed and one epoch for either method.
-- Grigoreva: published gru3 widths 250/150/150, four auxiliary branches,
-  full 125-input pipeline with market averages and rolling window 1000.
+- One seed and one epoch.
 - Patrick: eight blocks, width 64, eight attention heads, GRU width 256,
   77 numerical inputs and three categorical embeddings, all nine targets.
 - Training dates 700–703; unscored warmup 704–705; scoring 706–708.

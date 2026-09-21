@@ -1,4 +1,4 @@
-"""Patrick reconstruction configuration, separate from Grigoreva's defaults."""
+"""Patrick reconstruction configuration."""
 
 from dataclasses import asdict, dataclass, field
 

@@ -1,38 +1,25 @@
 # Verification record
 
-Verified locally on 2026-09-17 with Python 3.12.12 on macOS ARM64, using `uv.lock`.
+Historical Patrick verification records follow. Current commands are in the README;
+check counts below describe their recorded commits rather than the current suite.
 
-| Check | Result |
-|---|---|
-| `python -m pytest -q` | 90 passed |
-| `ruff check .` | Passed |
-| `ruff format --check .` | 70 files formatted correctly |
-| Actual distributed gateway batching method | All 15 synthetic batches matched |
-| Deliberate leakage mutations in disposable copies | All 5 detected by failing tests |
-| Six-member Grigoreva and single-seed Patrick online synthetic CLI smoke | Both temporal folds completed for each |
-| Reference + five one-switch ablations | All six configurations completed both folds |
-| Checkpoint reload, parquet loader, unknown/missing symbols | Covered by tests and CLI replay |
+## Patrick-only cleanup
 
-The five negative controls expose a current responder in the callback, deliver same-day
-responders at time zero, fit Grigoreva preprocessing outside its declared partition,
-mix future features into Patrick’s temporal input, and fit Patrick preprocessing
-outside its declared partition. Each caused a
-test failure rather than an import or test-collection error. The working source was not
-modified during these checks.
+Local verification after removing the other backend:
 
-Local generated artifacts:
+- Full suite: **115 passed**.
+- Four retained deliberate leakage mutations: **all detected** by failing tests.
+- Ruff lint/format and local Markdown links: passed.
+- Default CLI synthetic smoke: both folds completed through the causal gate.
+- A Patrick checkpoint created before the cleanup still loads; its replay predictions
+  including online updates are exactly equal after the cleanup.
+- Repeating its synthetic training after the cleanup produces identical model weights
+  and frozen preprocessing state.
 
-- `artifacts/leakage-mutations.json`: failing-test evidence for each negative control.
-- `artifacts/final-online-smoke/`: checkpoint, folds, predictions, and update audits.
-- `artifacts/ablation-smoke/comparison.json`: complete synthetic ablation execution results.
-
-Synthetic runs use smaller dimensions, one epoch, and a short rolling window. Their
-scores are not evidence of predictive improvements. The published network dimensions
-were separately instantiated and exercised in forward-pass tests. No full competition
-dataset training, Kaggle RPC submission, or leaderboard optimization was done.
-Bounded real-data CUDA runs are recorded below.
-
-Repeat the commands in `README.md` for a fresh verification record after changes.
+The model/training arithmetic and recorded experimental results were not changed.
+Source fingerprints changed because preprocessing moved to its own module; old run
+resumption uses the recorded source commit. Only irrelevant backend-specific tests
+were removed; generic fitting-boundary and online-timing coverage was ported to Patrick.
 
 ## Official data download
 
@@ -54,17 +41,6 @@ matched all 15 synthetic batches. This is a batching/lag differential check; it 
 not establish full RPC or hosted-runtime equivalence. At that initial download
 checkpoint, training had not yet started; subsequent pilots are recorded below.
 
-## Real-data CUDA pilot (later on 2026-09-17)
-
-The [Modal L4 pilot](real-data-pilot-report.md) completed one epoch on dates 700–703
-and three five-day replays on dates 704–708. Local tests: 49 passed; the remote
-causal gate: 42 passed. Unreleased responder perturbations left predictions and
-final weights identical. Keyed score recomputation agreed within 1e-12. The run
-finished in 320.70 seconds of measured pilot work with 2.09 GiB peak PyTorch CUDA
-allocation. Artifacts were downloaded and verified. This supersedes the earlier
-statement that no CUDA or real-data training had yet been run; full competition
-training and leaderboard optimization still have not been performed.
-
 ## Patrick local integration (2026-09-17)
 
 All 61 tests pass, including training-only vocabularies and statistics, temporal
@@ -84,7 +60,7 @@ full-size one-epoch training, matched frozen/online replays, and future-responde
 perturbation checks. Measured work took 450.81 seconds with 4.29 GiB peak PyTorch
 CUDA allocation. Independent score recomputation agreed within 7e-16. The
 archive was verified and downloaded; Modal reported the App stopped with zero tasks.
-The final holdout remains unused.
+This was before the later full-period experiments; that interval has since been inspected.
 
 ## Patrick cache and recovery checks (later on 2026-09-17)
 

@@ -177,3 +177,11 @@ def test_day_transform_matches_timestamp_transform_and_has_no_future_dependency(
     np.testing.assert_array_equal(actual[0][:prefix], features.transform_day(changed)[0][:prefix])
     with pytest.raises(ValueError, match="responder"):
         features.transform_day(public.with_columns(pl.lit(99.0).alias("responder_6")))
+
+
+def test_default_config_builds_patrick_and_rejects_foreign_method():
+    from src.patrick_config import PatrickConfig
+
+    assert isinstance(from_dict({}), PatrickConfig)
+    with pytest.raises(ValueError, match="method"):
+        from_dict({"method": "unsupported"})

@@ -13,8 +13,7 @@ performed locally after download and saved alongside the artifacts.
 
 ## Fixed workload
 
-Exactly the same 251,680-row slice and split as the
-[Grigoreva pilot](real-data-pilot-report.md): train 700–703, unscored warmup 704–705,
+The pilot uses a 251,680-row slice: train 700–703, unscored warmup 704–705,
 score 706–708. Dates 1499–1698 were excluded. One seed, one fixed epoch, and full
 published dimensions: eight blocks, width 64, eight attention heads, temporal GRU
 width 256, FFN width 1024, and head 64→256→128→9. The three categorical embeddings
@@ -84,7 +83,7 @@ source's stacked/einsum multi-seed inference optimization remains unimplemented.
 | Online on | 0.003859549438 |
 
 This is a correctness pilot on four training days and three scored days. It does
-not reproduce Patrick’s reported 0.02059 or establish a ranking against Grigoreva.
+not reproduce Patrick’s reported 0.02059.
 A predictive comparison still requires a shared development protocol, fixed training
 budgets, and a final holdout used only after choices are frozen. No leaderboard
 optimization or final-holdout training/evaluation was performed.

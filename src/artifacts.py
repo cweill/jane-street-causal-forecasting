@@ -8,10 +8,6 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from src.data.features import FeatureConfig, FeaturePipeline, TrainOnlyStandardizer
-from src.models.grigoreva_gru import GrigorevaGRU, ModelConfig
-from src.training.online import OnlineConfig, StreamingPredictor
-
 
 def _json_safe(value):
     if isinstance(value, dict):
@@ -44,81 +40,53 @@ def save_predictor(path, models, features, scaler, online, seeds, *, stacked_inf
     torch.save([m.state_dict() for m in models], path / "weights.pt")
     from src.data.patrick_features import PatrickFeatures
 
-    if isinstance(features, PatrickFeatures):
-        write_json(
-            path / "metadata.json",
-            {
-                "format_version": 2,
-                "method": "patrick",
-                "models": [asdict(m.config) for m in models],
-                "features": asdict(features.config),
-                "feature_state": features.state_dict(),
-                "online": asdict(online),
-                "seeds": list(seeds),
-                "stacked_inference": stacked_inference,
-                "weights_sha256": sha256_file(path / "weights.pt"),
-                "note": "Initial replay checkpoint; online optimizer/cache are not resumed.",
-            },
-        )
-        return
-    metadata = {
-        "format_version": 1,
-        "models": [asdict(m.config) for m in models],
-        "features": asdict(features.config),
-        "feature_names": features.names,
-        "feature_state": features.state_dict(),
-        "scaler": scaler.state_dict(),
-        "online": asdict(online),
-        "seeds": list(seeds),
-        "weights_sha256": sha256_file(path / "weights.pt"),
-    }
-    write_json(path / "metadata.json", metadata)
+    if not isinstance(features, PatrickFeatures):
+        raise TypeError("Patrick preprocessing required")
+    write_json(
+        path / "metadata.json",
+        {
+            "format_version": 2,
+            "method": "patrick",
+            "models": [asdict(m.config) for m in models],
+            "features": asdict(features.config),
+            "feature_state": features.state_dict(),
+            "online": asdict(online),
+            "seeds": list(seeds),
+            "stacked_inference": stacked_inference,
+            "weights_sha256": sha256_file(path / "weights.pt"),
+            "note": "Initial replay checkpoint; online optimizer/cache are not resumed.",
+        },
+    )
 
 
 def load_predictor(path, device="cpu", *, reset_clock=False):
     path = Path(path)
     metadata = json.loads((path / "metadata.json").read_text())
     if (
-        metadata["format_version"] not in {1, 2}
+        metadata["format_version"] != 2
+        or metadata.get("method") != "patrick"
         or sha256_file(path / "weights.pt") != metadata["weights_sha256"]
     ):
         raise ValueError("unsupported or corrupt model artifact")
-    if metadata["format_version"] == 2:
-        from src.data.patrick_features import PatrickFeatureConfig, PatrickFeatures
-        from src.models.patrick_yam import PatrickModelConfig, PatrickYam
-        from src.training.patrick import PatrickOnlineConfig, PatrickPredictor
+    from src.data.patrick_features import PatrickFeatureConfig, PatrickFeatures
+    from src.models.patrick_yam import PatrickModelConfig, PatrickYam
+    from src.training.patrick import PatrickOnlineConfig, PatrickPredictor
 
-        features = PatrickFeatures(
-            PatrickFeatureConfig(**metadata["features"]),
-            metadata["feature_state"]["scaler"]["training_dates"],
-        )
-        features.load_state_dict(metadata["feature_state"])
-        states = torch.load(path / "weights.pt", map_location=device, weights_only=True)
-        models = []
-        for config, state in zip(metadata["models"], states, strict=True):
-            model = PatrickYam(PatrickModelConfig(**config), features.vocab_sizes).to(device)
-            model.load_state_dict(state)
-            models.append(model.eval())
-        return PatrickPredictor(
-            models,
-            features,
-            PatrickOnlineConfig(**metadata["online"]),
-            metadata["seeds"],
-            stacked_inference=metadata.get("stacked_inference", False),
-        )
-    features = FeaturePipeline(FeatureConfig(**metadata["features"]))
-    if features.names != metadata["feature_names"]:
-        raise ValueError("feature schema changed since artifact creation")
+    features = PatrickFeatures(
+        PatrickFeatureConfig(**metadata["features"]),
+        metadata["feature_state"]["scaler"]["training_dates"],
+    )
     features.load_state_dict(metadata["feature_state"])
-    if reset_clock:
-        features.reset_clock()
-    scaler = TrainOnlyStandardizer.from_state_dict(metadata["scaler"])
     states = torch.load(path / "weights.pt", map_location=device, weights_only=True)
     models = []
     for config, state in zip(metadata["models"], states, strict=True):
-        model = GrigorevaGRU(len(features.names), ModelConfig(**config)).to(device)
+        model = PatrickYam(PatrickModelConfig(**config), features.vocab_sizes).to(device)
         model.load_state_dict(state)
         models.append(model.eval())
-    return StreamingPredictor(
-        models, features, scaler, OnlineConfig(**metadata["online"]), seeds=metadata["seeds"]
+    return PatrickPredictor(
+        models,
+        features,
+        PatrickOnlineConfig(**metadata["online"]),
+        metadata["seeds"],
+        stacked_inference=metadata.get("stacked_inference", False),
     )

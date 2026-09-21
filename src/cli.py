@@ -18,7 +18,7 @@ def main():
     synthetic.add_argument("--days", type=int, default=10)
     for name in ("run", "ablations", "smoke"):
         command = sub.add_parser(name)
-        command.add_argument("--config", default="configs/baseline.yaml")
+        command.add_argument("--config", default="configs/patrick.yaml")
         command.add_argument("--output", required=True)
         if name == "run":
             command.add_argument("--cache", help="reusable Patrick preparation cache directory")
@@ -50,36 +50,23 @@ def main():
 
         # Small dimensions and one epoch check execution only; flags are preserved.
         panel = synthetic_panel()
-        if getattr(config, "method", None) == "patrick":
-            import polars as pl
+        import polars as pl
 
-            model = replace(
-                config.model,
-                d_model=8,
-                nheads=2,
-                d_hidden=16,
-                layers=2,
-                d_cat=2,
-                head_sizes=(12, 8),
-            )
-            features = config.features
-            # The general synthetic fixture uses continuous values everywhere.
-            # Patrick's three categorical columns require a finite vocabulary.
-            panel = panel.with_columns(
-                [
-                    (pl.col("symbol_id") % 2).cast(pl.Float32).alias(c)
-                    for c in features.category_columns
-                ]
-            )
-        else:
-            model = replace(
-                config.model,
-                hidden_sizes=(8,),
-                linear_sizes=(6,),
-                dropout=(0.1,),
-                linear_dropout=(0.1,),
-            )
-            features = replace(config.features, rolling_window=3)
+        model = replace(
+            config.model,
+            d_model=8,
+            nheads=2,
+            d_hidden=16,
+            layers=2,
+            d_cat=2,
+            head_sizes=(12, 8),
+        )
+        features = config.features
+        # The general synthetic fixture uses continuous values everywhere.
+        # Patrick's three categorical columns require a finite vocabulary.
+        panel = panel.with_columns(
+            [(pl.col("symbol_id") % 2).cast(pl.Float32).alias(c) for c in features.category_columns]
+        )
         config = replace(
             config,
             name=config.name + "_synthetic_smoke",

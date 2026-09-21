@@ -1,21 +1,11 @@
-"""Select a training backend while keeping CV, API replay, and metrics shared."""
+"""Adapters for Patrick preparation and training in the experiment runner."""
 
-from src.training import offline, patrick
+from src.training import patrick
 
 
 def prepare(config, source, dates, directory):
-    backend = patrick if getattr(config, "method", None) == "patrick" else offline
-    return backend.prepare_training(source, dates, config.features, directory)
+    return patrick.prepare_training(source, dates, config.features, directory)
 
 
 def fit(config, prepared, model_config, seed):
-    if getattr(config, "method", None) == "patrick":
-        return patrick.train_model(prepared, model_config, training=config.training, seed=seed)
-    return offline.train_model(
-        prepared,
-        model_config,
-        seed=seed,
-        epochs=config.training.epochs,
-        learning_rate=config.training.learning_rate,
-        device=config.training.device,
-    )
+    return patrick.train_model(prepared, model_config, training=config.training, seed=seed)

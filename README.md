@@ -1,17 +1,15 @@
 # Jane Street 2025 forecasting research harness
 
-This package implements the Jane Street Real-Time Market Data Forecasting evaluation
-information flow. Current research focuses on Patrick Yam's second-place method;
-an independent reproduction of Evgeniia Grigoreva's eighth-place GRU pipeline is also
-implemented. **Correctness comes before experiments:** every CLI training/ablation run
-first executes the metric, protocol, and causal tests. No leaderboard optimization has
-been performed, and no leaderboard score reproduction is claimed.
+A leakage-safe research harness for reconstructing **Patrick Yam's second-place
+Jane Street Real-Time Market Data Forecasting method**. It implements training-only
+preprocessing, asset attention with temporal GRUs, delayed online updates, seed
+ensembles, and local evaluation through the competition's information flow.
 
-Patrick Yam’s second-place architecture is implemented as a documented
-[reconstruction](docs/patrick-implementation.md), with train-only preprocessing,
-causal asset attention/GRU inference, and delayed online updates. The
-[reproduction tracker](docs/patrick-yam-tracker.md) preserves the source screenshots,
-reported results, and unresolved details. Both methods use the same simulator and metric.
+**Correctness comes before experiments:** every CLI training/ablation run first
+executes metric, protocol, and causal tests. This is an independent reconstruction,
+not the author's submission code or a verified reproduction of his leaderboard score.
+The [implementation decisions](docs/patrick-implementation.md) and
+[source tracker](docs/patrick-yam-tracker.md) distinguish recovered settings from assumptions.
 
 ## Current Patrick results
 
@@ -56,9 +54,8 @@ contain the scores and rolling charts.
 
 The [bounded Modal GPU pilot](docs/modal-pilot.md) runs the real-data correctness
 checks on dates 700–708 and downloads its checkpoints, audits, and runtime report.
-The [first L4 pilot passed](docs/real-data-pilot-report.md), including a real-data
-future-responder perturbation check. The
-[Patrick L4 pilot also passed](docs/patrick-pilot-report.md) on the identical slice.
+The [Patrick L4 pilot passed](docs/patrick-pilot-report.md), including a real-data
+future-responder perturbation check.
 The [Patrick plot runbook](docs/patrick-run-safety.md) records the cache benchmark,
 CUDA interruption/recovery rehearsal, fixed run settings, and persistent Modal launcher.
 The [W&B monitor](docs/wandb-monitoring.md) can observe a Patrick job's saved
@@ -92,17 +89,15 @@ uv run --frozen python -m pytest -q
 uv run --frozen python -m scripts.check_leakage_mutations
 
 # Small synthetic runs; reduced network dimensions, one epoch, no financial meaning.
-uv run --frozen js-repro smoke --config configs/baseline.yaml --output artifacts/baseline-smoke
-uv run --frozen js-repro smoke --config configs/online.yaml --output artifacts/online-smoke
 uv run --frozen js-repro smoke --config configs/patrick.yaml --output artifacts/patrick-smoke
 
 # Real research: supply the competition training parquet downloaded from Kaggle.
 uv run --frozen js-repro run --data /path/to/train.parquet \
-  --config configs/online.yaml --output artifacts/online-cv
+  --config configs/patrick_development.yaml --output artifacts/patrick-cv
 
-# Reference plus five independent one-switch ablations, using identical folds/epochs.
+# Reference plus seven independent ablations, using identical folds and epoch budgets.
 uv run --frozen js-repro ablations --data /path/to/train.parquet \
-  --config configs/online.yaml --output artifacts/ablations
+  --config configs/patrick_development.yaml --output artifacts/ablations
 ```
 
 `--data` accepts a parquet file or a directory containing parquet partitions. Keep the
@@ -112,26 +107,25 @@ If the shell's `TMPDIR` points to a nonexistent directory, prefix `uv` with `TMP
 
 ## Layout and switches
 
-The requested layout is retained: `src/data/{loader,features,api_simulator}.py`,
-`src/models/grigoreva_gru.py`, `src/training/{offline,online}.py`, `src/metric.py`,
-`src/cv.py`, and `experiments/ablations.py`. Supporting files provide config loading,
-artifact persistence, and the CLI.
+The core modules are `src/data/{loader,api_simulator,patrick_features,normalization}.py`,
+`src/models/{patrick_yam,patrick_ensemble}.py`, `src/training/patrick.py`, `src/metric.py`,
+and `src/cv.py`. Configs and scripts cover local research and persistent Modal runs.
 
-| Improvement | Independent config switch |
+| Ablation | Config setting |
 |---|---|
-| Same-timestamp market averages | `features.market_average` |
-| Rolling deviations and standard deviations | `features.rolling` |
-| Auxiliary responder branches and losses | `model.auxiliary_targets` |
+| Nine responder targets versus primary target only | `model.auxiliary_targets` |
 | Delayed daily gradient updates | `online.enabled` |
 | Multiple random seeds | `ensemble.seed_ensembling` |
+| Recency weighting | `training.recency_weighting` |
+| Full-length-day weighting | `training.full_length_weighting` |
+| Final normalization | `model.post_norm` |
+| Temporal GRU capacity | `model.rnn_multiplier` |
 
-`baseline.yaml` disables all five. `grigoreva.yaml` enables features, auxiliaries, and
-the six-member ensemble. `online.yaml` additionally enables online updates. Architecture
-ensembling is separately controlled by `ensemble.architectures`; turning off seed
-ensembling retains the first seed for **each** selected architecture. An ablation changes
-one switch relative to the reference and resets every model, scaler, and stream state.
-These switches test the author's reported improvements; they do not assume improvements
-will appear on another dataset.
+`experiments/ablations.py` changes one setting at a time relative to the reference,
+resetting models, preprocessing, and stream state. Optimizer reset policy and loss
+balancing are additionally configurable. These interventions test hypotheses;
+improvement on another interval is not assumed. `configs/patrick.yaml` is a one-epoch
+CPU starter; the fixed development and ensemble configs describe larger GPU experiments.
 
 ## Evaluation and causality
 
@@ -150,7 +144,7 @@ date produces an empty table; a day without `time_id=0` receives no lag release,
 the distributed gateway implementation. No earlier responder within the current day is
 available. Lag tables and evaluator truth are kept separate from the predictor.
 
-Unscored rows still receive predictions, update recurrent/rolling state, and become
+Unscored rows still receive predictions, update recurrent state, and become
 eligible for training after their labels are released. The model caches only the current
 day's observed inputs and joins released labels by date, time, and symbol. Missing labels
 get zero training weight while their input timesteps remain in the sequence. There is no
@@ -158,46 +152,40 @@ final-day update without a subsequent release. The first replay lag is visible, 
 new predictor has no matching cached replay inputs, so it does not repeat offline training
 on the last training day.
 
-Temporal splits use sorted unique dates, never shuffled rows. The Grigoreva configs
-start at date 700 and use two 200-date validation windows. For dates 700–1698, these are:
+Temporal splits use sorted unique dates, never shuffled rows. The fixed Patrick
+protocols are:
 
-| Fold | Offline training | Validation |
-|---|---|---|
-| 0 | 700–1298 | 1299–1498 |
-| 1 | 700–1498 | 1499–1698 |
+| Protocol | Offline training | Unscored warmup | Scored replay |
+|---|---|---|---|
+| Development | 0–1059 | 1060–1179 | 1180–1379 |
+| Later plot reproduction | 0–1379 | 1380–1499 | 1500–1698 |
 
-Set `cv.n_splits: 1` and `cv.gap_days: 200` for the Grigoreva private-period experiment:
-fit through 1298, replay 1299–1498 as unscored warmup, and score 1499–1698. The gap is
-**observed streaming time**, so updates on newly released gap-day labels are allowed.
-It is not a 200-day embargo that discards the intervening market stream.
+Warmup is observed streaming time: updates on newly released labels are allowed.
+The 120-day warmup is an experimental choice, not an API constraint. The actual
+training data ends at 1698; the later scored interval contains 199 dates.
 
-Offline fitting can use all labels in its declared historical partition. Auxiliary
-forward shifts are supervision, never inputs. Their required endpoints must stay within
-that partition; unavailable endpoint losses are masked. Fitted normalization means and
-standard deviations never use validation. Each training run uses a fixed epoch budget
-and does not automatically early-stop. Patrick's development studies use validation
-scores to compare candidate budgets and online settings; those dates therefore serve
-as development data. Five epochs is our current baseline, **not** a verified epoch
-count from Patrick's submission. Use a separate chronological evaluation before
-making generalization claims about selected settings.
+All nine responder targets are supervision, never model inputs. Fitted normalization
+and category vocabularies use only offline training dates. Every run uses a fixed
+epoch budget without automatic early stopping. Development validation informs later
+hyperparameter choices; it is not an untouched holdout. Five epochs is our working
+baseline, not a verified epoch count from Patrick's submission.
 
-## GRU reproduction
+## Model and features
 
-Both published architectures and the fixed 16-feature list are implemented. The full
-pipeline has 125 inputs: 76 raw features (excluding 09–11), 16 deviations from rolling
-means, 16 sample rolling standard deviations, 16 market means, and time. A rolling window
-contains the last 1000 observed rows of that symbol, including the current row, and carries
-across dates. Recurrent sequences are one day long and reset at the next day; hidden states
-are keyed by symbol to support changing symbol sets.
+Inputs are 76 raw numerical features (excluding 09–11), a Gaussian time-of-day
+feature, and embeddings for categorical features 09–11. Numerical statistics and
+category vocabularies are fitted on training dates and frozen. The model combines
+same-timestamp asset attention with causal temporal GRUs and a nine-target head.
+Recurrent state resets each day and is keyed by symbol to handle missing observations.
 
-The auxiliary version uses four **separate recurrent networks**, with outputs supervised
-by responders 10, 9, 8, and 7, and a linear combiner predicting responder 6. Offline loss
-adds five weighted normalized squared-error terms. Online learning uses only responder 6,
-one AdamW step per released day, a fresh optimizer, learning rate 0.0003, weight decay 0.01,
-and gradient clipping at 1.0. Predictions are clipped to [-5, 5] per member, then averaged.
+The full configuration uses eight blocks, model width 64, eight attention heads,
+and GRU multiplier four. Online learning starts a separate Adam optimizer and updates
+from the latest released day; seed predictions are averaged. Stacked inference batches
+weights across seeds and caches GRU states, while online optimizers remain independent.
 
-See [source provenance and deliberate differences](docs/sources.md) for dimensions,
-dropout rates, target formulas, source pins, and boundary corrections.
+See [source provenance](docs/sources.md) and
+[implementation choices](docs/patrick-implementation.md) for exact recovered settings
+and the remaining reconstruction assumptions.
 
 ## Artifacts and limits
 
@@ -205,13 +193,12 @@ Each run records configuration, software versions, the safety-test output and co
 input file metadata, exact date splits, daily training losses, initial checkpoints,
 prediction parquet files, pooled scores, and an online-update audit. Load a fresh callback
 using `src.artifacts.load_predictor(path).predict`; it accepts the Kaggle-style Polars
-signature. Checkpoints contain inference initialization state, including training feature
-history, and are saved before validation adaptation. Those initial checkpoints do not
+signature. Checkpoints contain inference initialization state and frozen preprocessing,
+and are saved before validation adaptation. Those initial checkpoints do not
 contain optimizer state. The Patrick plot runner separately saves resumable training
 and day-boundary replay checkpoints, including optimizer state; see the runbook above.
-For a deployment stream whose dates restart at zero, use
-`load_predictor(path, reset_clock=True).predict` to reset the chronological cursor while
-retaining rolling history. CV keeps the original historical dates and requires no rebasing.
+A freshly loaded Patrick predictor also accepts a deployment stream whose dates
+restart at zero; it has no prior replay clock. CV retains historical date IDs.
 
 Preparation and training read one day at a time and keep prepared arrays on disk. Full
 competition runs still require substantial disk space, compute, and parquet scan I/O;
@@ -227,3 +214,13 @@ runtime limits; its optional per-call timeout detects overruns after a call retu
 It is an information-flow boundary for this harness, not a sandbox against hostile Python
 callbacks. Synthetic tests establish causal behavior on the tested cases, not universal
 proof against arbitrary future code changes.
+
+
+Historical experiments pin their source commits and cache/checkpoint identities.
+The Patrick-only cleanup changes source fingerprints: use the recorded commit for
+resuming or exactly reproducing an old job. New runs build fresh cache identities;
+identity checks are not bypassed. Patrick format-2 inference checkpoints remain loadable.
+
+See the [publication audit](docs/publication-audit.md) for scan scope, credential
+handling, and identifying metadata retained in Git history. Competition data, trained
+weights, credentials, and local run directories are not included in this repository.

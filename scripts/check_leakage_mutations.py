@@ -44,14 +44,6 @@ MUTATIONS = [
         ],
     },
     {
-        "name": "fit_on_future_partition",
-        "file": "src/training/offline.py",
-        "replacements": [("dates = tuple(training_dates)", "dates = tuple(source.dates())")],
-        "tests": [
-            "tests/test_offline_boundaries.py::test_source_is_never_read_outside_training_partition"
-        ],
-    },
-    {
         "name": "patrick_mixes_future_features_into_prefix",
         "file": "src/models/patrick_yam.py",
         "replacements": [

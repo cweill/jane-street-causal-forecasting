@@ -18,9 +18,9 @@ Offline AdamW uses learning rate 0.0005, weight decay 0.0001, and betas
 released day's data. The multitask weights are [1,1,1,6,2,2,12,5,5].
 
 Preprocessing fits only the declared offline dates. All-time global statistics,
-category vocabularies, auxiliary targets, and model selection never consume the
-validation partition. API replay, scored-row handling, lag release, zero-mean R²,
-temporal folds, output validation, and run artifact writing are shared with Grigoreva.
+category vocabularies and training targets never consume the validation partition.
+Development validation can inform settings for later experiments. API replay, scored-row handling, lag release, zero-mean R²,
+temporal folds, output validation, and artifact writing use the common research harness.
 
 ## Explicit reconstruction choices
 
@@ -38,7 +38,7 @@ temporal folds, output validation, and run artifact writing are shared with Grig
 | Target order | responder_0 through responder_8; main output index 6 |
 | Detached loss balancing | Weighted SSE / weighted target energy per target, divided by its detached ratio with floor 1e-8; zero-energy targets skipped |
 | Sample weighting | Multiply the normalized daily loss by `(200+d)/(200+max_train_date)` and optional ×1.5 for 968 distinct timestamps |
-| Online learning rate | 0.0005, the user’s hypothesis for the plot reproduction; not source-verified. The earlier pilot used 0.0003. |
+| Online learning rate | Historical plot configs use 0.0005; completed development and 17-model follow-up favor 0.0001 as the working baseline. Neither is source-verified. The earlier pilot used 0.0003. |
 | Online optimizer lifetime | New Adam for online learning, persistent across days by default; daily reset independently configurable |
 | Online target set | Same enabled responder targets/loss as offline; all nine released responders when auxiliary supervision is on |
 | Epoch count, seed count | One fixed epoch and one seed by default; not the author's final training budget |
@@ -54,7 +54,7 @@ an explicit effective-weighting reconstruction, pending the author's loss code.
 Detached loss balancing makes the displayed optimization loss approximately
 constant; it must not be used as a validation metric or early-stopping signal.
 
-Both predictors canonicalize symbol order internally and restore API row order
+The predictor canonicalizes symbol order internally and restore API row order
 on output, avoiding row-order-dependent floating-point differences. The model
 also passes numerical permutation-equivariance tests without relying on sorting.
 
@@ -74,14 +74,13 @@ bounded development dataset to avoid opening the final holdout during tuning.
 Independent ablations cover auxiliary targets, online updates, seed ensembling,
 recency weighting, full-length weighting, post-normalization, and GRU multiplier.
 Loss balancing and daily optimizer reset can also be configured individually.
-Market averages and rolling features remain Grigoreva-specific switches.
 
-Checkpoints use format version 2 for Patrick while preserving format version 1
-for Grigoreva. Both reload through `src.artifacts.load_predictor` and implement
-`predict(test,lags)`. They initialize fresh replay: they do not resume optimizer
-moments or a partially consumed day. Seed models remain independent and their
-predictions are averaged. The source's stacked/einsum seed optimization is not
-implemented; the initial version uses sequential model execution.
+Patrick checkpoints use format version 2 and reload through
+`src.artifacts.load_predictor` with `predict(test,lags)`. They initialize fresh replay;
+they do not resume optimizer moments or a partially consumed day. Seed models remain
+independent and their predictions are averaged. Optional
+[stacked/einsum inference](stacked-ensemble-inference.md) batches seed weights and
+caches recurrent states while retaining independent online optimizers.
 
 ## Required verification
 
@@ -92,6 +91,6 @@ delayed-label timing, unreleased-responder perturbation, and seed independence.
 Disposable mutation checks deliberately introduce future temporal mixing and
 future-partition fitting and require those tests to fail.
 
-The nine-day pilot uses the same dates, one-epoch/one-seed budget, and frozen vs.
-online replay checks as the existing Grigoreva pilot. Its scores are execution
+The nine-day pilot uses a one-epoch/one-seed budget with paired frozen and
+online replay checks. Its scores are execution
 diagnostics, not a comparison to the author's 0.02059.

@@ -1,0 +1,4 @@
+# Reviewed non-secrets only; exact commit/file/rule/line fingerprints.
+# UUID used for a Modal lifetime probe and a content-addressed cache hash.
+c4dcde629bcc988ee2aa02b11027af54e327bf73:docs/references/patrick-submission-rehearsal.json:generic-api-key:9
+c4dcde629bcc988ee2aa02b11027af54e327bf73:docs/references/patrick-ol-interruption.json:generic-api-key:9

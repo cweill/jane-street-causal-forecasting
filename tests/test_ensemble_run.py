@@ -24,7 +24,7 @@ def test_verified_legacy_cache_rejects_changed_preparation_and_corruption(tmp_pa
     archive = tmp_path / "source.tar.gz"
     names = [
         "src/data/schema.py",
-        "src/data/features.py",
+        "src/data/normalization.py",
         "src/data/patrick_features.py",
         "src/training/patrick.py",
         "src/training/cache.py",

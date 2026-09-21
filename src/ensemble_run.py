@@ -32,7 +32,7 @@ def load_verified_cache(directory, source_archive, config, dates, dataset_sha256
     directory = Path(directory)
     names = (
         "src/data/schema.py",
-        "src/data/features.py",
+        "src/data/normalization.py",
         "src/data/patrick_features.py",
         "src/training/patrick.py",
         "src/training/cache.py",

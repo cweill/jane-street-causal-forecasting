@@ -76,8 +76,8 @@ def run_gpu(input_digest: str, run_id: str, method: str):
 
 
 @app.local_entrypoint()
-def main(data: str, method: str = "grigoreva"):
-    if method not in {"grigoreva", "patrick"}:
+def main(data: str, method: str = "patrick"):
+    if method != "patrick":
         raise ValueError("unknown pilot method")
     data_path = Path(data).resolve()
     digest = hashlib.sha256(data_path.read_bytes()).hexdigest()

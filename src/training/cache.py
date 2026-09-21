@@ -36,7 +36,7 @@ def preprocessing_fingerprint():
     digest = hashlib.sha256()
     for name in (
         "src/data/schema.py",
-        "src/data/features.py",
+        "src/data/normalization.py",
         "src/data/patrick_features.py",
         "src/training/patrick.py",
         "src/training/cache.py",

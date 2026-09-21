@@ -5,8 +5,10 @@ from statistics import NormalDist
 
 import numpy as np
 
-from src.data.features import BASE, TrainOnlyStandardizer
-from src.data.schema import KEYS, TEST_COLUMNS, validate_test
+from src.data.normalization import TrainOnlyStandardizer
+from src.data.schema import FEATURES, KEYS, TEST_COLUMNS, validate_test
+
+BASE = [f for f in FEATURES if f not in {"feature_09", "feature_10", "feature_11"}]
 
 
 @dataclass(frozen=True)

@@ -15,3 +15,20 @@ data/
 .modal.toml
 kaggle.json
 .DS_Store
+
+# Credentials and private exports must never enter Git.
+.netrc
+.netrc.*
+.kaggle/
+.aws/
+.ssh/
+*.pem
+*.key
+*.p12
+*.pfx
+*.parquet
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.pickle

@@ -108,10 +108,6 @@ assumptions in the implementation document.
 | Auxiliary targets | responder_6 only/all nine | Loss scaling and target order explicitly specified |
 | Fast inference | Separate models/stacked models | Prediction and hidden-state equivalence; runtime and memory |
 
-The existing Grigoreva feature switches (market averages and rolling features) remain
-part of the original harness. They are not claimed Patrick Yam features. Distinguish
-comparisons matching training history from those preserving each author's choices.
-
 Use pooled weighted zero-mean R² over each 20-day window for our rolling diagnostics,
 not an average of daily R². This is our metric-consistent plotting rule; the exact
 implementation of the author's plotted rolling score is not available. Report the
@@ -144,8 +140,6 @@ do not copy a diagram endpoint of 1699 into a split without checking the counts.
 Competition data is available through `data/competition/train.parquet`: 47,127,338
 rows, 1,699 dates, ten partitions. See [verification record](verification.md) and
 `artifacts/competition-data.json`. The official gateway matched all 15 synthetic
-reference batches. The existing Grigoreva implementation has now completed a
-[bounded real-data CUDA pilot](real-data-pilot-report.md), including online-update
-and future-label checks. Patrick's full-size architecture also passed its bounded
+reference batches. Patrick's full-size architecture also passed its bounded
 CUDA pilot and recovery rehearsal. The full-period plot uses the pinned
 `configs/patrick_ol.yaml`; its settings are frozen before replay.

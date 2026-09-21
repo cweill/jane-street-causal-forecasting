@@ -177,7 +177,7 @@ def replay(frame, checkpoint, directory, device, online):
     return summary
 
 
-def run_pilot(data, output, device="cuda", method="grigoreva"):
+def run_pilot(data, output, device="cuda", method="patrick"):
     gate = safety_gate()
     torch.set_num_threads(4)
     torch.use_deterministic_algorithms(True)
@@ -189,9 +189,9 @@ def run_pilot(data, output, device="cuda", method="grigoreva"):
     output.mkdir(parents=True, exist_ok=False)
     frame = pl.read_parquet(data).sort(KEYS)
     source = validate_panel(frame)
-    if method not in {"grigoreva", "patrick"}:
+    if method != "patrick":
         raise ValueError("unknown pilot method")
-    filename = "patrick.yaml" if method == "patrick" else "real_data_pilot.yaml"
+    filename = "patrick.yaml"
     config = load_config(Path(__file__).resolve().parents[1] / "configs" / filename)
     config = replace(
         config,
@@ -294,7 +294,7 @@ if __name__ == "__main__":
     parser.add_argument("--data", default="data/competition/train.parquet")
     parser.add_argument("--output", required=True)
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu")
-    parser.add_argument("--method", choices=["grigoreva", "patrick"], default="grigoreva")
+    parser.add_argument("--method", choices=["patrick"], default="patrick")
     args = parser.parse_args()
     if args.mode == "prepare":
         prepare_slice(args.data, args.output)

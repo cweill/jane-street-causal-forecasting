@@ -24,7 +24,7 @@ KERNEL_FILES = (
     "src/data/api_simulator.py",
     "src/data/loader.py",
     "src/data/patrick_features.py",
-    "src/data/features.py",
+    "src/data/normalization.py",
     "src/data/schema.py",
     "uv.lock",
     "pyproject.toml",

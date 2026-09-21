@@ -43,7 +43,7 @@ Optuna, epochs, and seed averaging are frequently misrecognized in the captions.
   then clipped; categorical inputs use embeddings. The numerical and embedded features
   are concatenated and projected into a common hidden dimension.
 - One additional time-of-day feature uses a uniform rescaling followed by a Gaussian
-  quantile transform. This is not Grigoreva's raw standardized time_id feature.
+  quantile transform.
 - A day is represented along time and symbol axes. Repeated blocks mix symbols using
   self-attention, mix time using a GRU, and apply a feed-forward network, with residual
   connections. The slides show pre-normalization. The GRU's hidden width has a separate
@@ -88,11 +88,9 @@ The benchmark's metric and label-release boundary remain fixed. In this harness,
 "newly available day" always means the previous day's labels released at the next
 day's time zero, even when the talk calls it the current day of training.
 
-Reproduce the author's 120-day warmup as a separately named evaluation scenario. The
-existing 200-day warmup reproduces Grigoreva's historical gap experiment; neither is a
-universal API constant. For a direct method comparison, run both models on the same
-offline training dates, warmup dates, and scored dates. Separate a comparison using the
-authors' respective training-history choices from a comparison with matched training data.
+Reproduce the author's 120-day warmup as a separately named evaluation scenario;
+it is not a universal API constant. Compare settings using matched offline training,
+warmup, and scored dates.
 
 All normalization, target-correlation calculations, category-vocabulary construction,
 epoch selection, and hyperparameter selection must exclude the final comparison holdout.

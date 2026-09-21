@@ -1,5 +1,7 @@
 name: Causal checks
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,4 +16,4 @@ jobs:
       - run: uv run --frozen ruff format --check .
       - run: uv run --frozen python -m pytest -q
       - run: uv run --frozen python -m scripts.check_leakage_mutations
-      - run: uv run --frozen js-repro smoke --config configs/online.yaml --output artifacts/ci-smoke
+      - run: uv run --frozen js-repro smoke --config configs/patrick.yaml --output artifacts/ci-smoke

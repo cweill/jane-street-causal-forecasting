@@ -39,9 +39,10 @@ def test_patrick_cli_smoke_runs_complete_synthetic_experiment(tmp_path, monkeypa
     output = tmp_path / "smoke"
     monkeypatch.setattr(
         "sys.argv",
-        ["js-repro", "smoke", "--config", "configs/patrick.yaml", "--output", str(output)],
+        ["js-repro", "smoke", "--output", str(output)],
     )
     main()
+    assert json.loads((output / "config.json").read_text())["method"] == "patrick"
     result = json.loads((output / "result.json").read_text())
     assert len(result["folds"]) == 2
     assert all(fold["online_updates"] > 0 for fold in result["folds"])
