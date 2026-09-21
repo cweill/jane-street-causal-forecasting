@@ -1,16 +1,58 @@
 # Jane Street 2025 forecasting research harness
 
 This package implements the Jane Street Real-Time Market Data Forecasting evaluation
-information flow and an independent reproduction of Evgeniia Grigoreva's eighth-place
-GRU pipeline. **Correctness comes before experiments:** every CLI training/ablation run
+information flow. Current research focuses on Patrick Yam's second-place method;
+an independent reproduction of Evgeniia Grigoreva's eighth-place GRU pipeline is also
+implemented. **Correctness comes before experiments:** every CLI training/ablation run
 first executes the metric, protocol, and causal tests. No leaderboard optimization has
 been performed, and no leaderboard score reproduction is claimed.
 
-Patrick Yam’s second-place architecture is also implemented as a documented
+Patrick Yam’s second-place architecture is implemented as a documented
 [reconstruction](docs/patrick-implementation.md), with train-only preprocessing,
 causal asset attention/GRU inference, and delayed online updates. The
 [reproduction tracker](docs/patrick-yam-tracker.md) preserves the source screenshots,
 reported results, and unresolved details. Both methods use the same simulator and metric.
+
+## Current Patrick results
+
+The working baseline is **five offline epochs and online LR `1e-4`**, with three
+daily Adam steps, betas `(0.8, 0.95)`, persistent online optimizer state, and all nine
+responder targets. Offline training LR remains `5e-4`. Online updates use only
+previous-day labels after their API release.
+
+Completed experiments report pooled weighted zero-mean R²:
+
+| Experiment | Seeds | Scored dates | Frozen R² | Online R² at `1e-4` |
+|---|---:|---|---:|---:|
+| Development, 3 offline epochs | 3 | 1180–1379 | 0.01818019 | 0.02193983 |
+| Development, 4 offline epochs | 3 | 1180–1379 | 0.01893456 | 0.02308571 |
+| Development, 5 offline epochs | 3 | 1180–1379 | 0.01935094 | 0.02405157 |
+| Later follow-up, 5 offline epochs | 17 | 1500–1698 | 0.01412888 | 0.01941540 |
+
+Development models train on dates 0–1059 and replay unscored warmup 1060–1179.
+The 17-model ensemble trains on 0–1379 and replays unscored warmup 1380–1499.
+Scores from these different windows are not directly comparable.
+
+The [completed epoch study](docs/patrick-epoch-study.md) favors five epochs among
+the three tested budgets. The [learning-rate refinement](docs/patrick-online-refinement.md)
+found `5e-5` narrowly ahead of `1e-4` on the development window (0.02406497 versus
+0.02405157); this does not establish a precise optimum. Only `1e-4` has the
+[completed 17-model follow-up](docs/patrick-online-followup.md), where it improves
+R² over frozen by 0.00528652. These windows have been inspected during development;
+they are not untouched test sets, and Patrick's exact published scores are not reproduced.
+
+Historical configs retain their original settings: for example,
+`configs/patrick_ensemble.yaml` still has online LR `5e-4`. The follow-up launcher
+overrides that value to `1e-4`; it does not retrain the ensemble. The epoch-study
+config trains through epoch four to capture epochs three and four and reuses the
+original epoch-five results. Use each linked runbook and recorded launch identity
+to reproduce that experiment rather than treating every config as the current baseline.
+
+The completed [W&B epoch comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-study-20260920T185609Z-overview)
+and [17-model OL comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z)
+contain the scores and rolling charts.
+
+## Workflows and implementation
 
 The [bounded Modal GPU pilot](docs/modal-pilot.md) runs the real-data correctness
 checks on dates 700–708 and downloads its checkpoints, audits, and runtime report.
@@ -19,7 +61,7 @@ future-responder perturbation check. The
 [Patrick L4 pilot also passed](docs/patrick-pilot-report.md) on the identical slice.
 The [Patrick plot runbook](docs/patrick-run-safety.md) records the cache benchmark,
 CUDA interruption/recovery rehearsal, fixed run settings, and persistent Modal launcher.
-The [W&B monitor](docs/wandb-monitoring.md) observes the running Patrick job's saved
+The [W&B monitor](docs/wandb-monitoring.md) can observe a Patrick job's saved
 losses and evaluations through a separate CPU process with read-only data access.
 Patrick's optional [stacked ensemble inference](docs/stacked-ensemble-inference.md)
 batches model weights and GRU states across seeds while retaining separate online optimizers.
@@ -28,7 +70,7 @@ daily updates, and preparation costs for 1, 4, and 17 models on an L4.
 The [17-seed ensemble runbook](docs/patrick-ensemble-run.md) describes verified
 seed-0 reuse, four concurrent training GPUs, recovery checkpoints, and automatic
 matched frozen/online replay.
-For future development runs, [epoch-level validation](docs/patrick-epoch-validation.md)
+[Epoch-level validation](docs/patrick-epoch-validation.md)
 logs held-out frozen-model R² to W&B and saves each epoch's checkpoint using an
 earlier chronological split.
 The [online sensitivity study](docs/patrick-online-sensitivity.md) compares three
@@ -116,15 +158,15 @@ final-day update without a subsequent release. The first replay lag is visible, 
 new predictor has no matching cached replay inputs, so it does not repeat offline training
 on the last training day.
 
-Temporal splits use sorted unique dates, never shuffled rows. Defaults start at date 700
-and use two 200-date validation windows. For dates 700–1698, these are:
+Temporal splits use sorted unique dates, never shuffled rows. The Grigoreva configs
+start at date 700 and use two 200-date validation windows. For dates 700–1698, these are:
 
 | Fold | Offline training | Validation |
 |---|---|---|
 | 0 | 700–1298 | 1299–1498 |
 | 1 | 700–1498 | 1499–1698 |
 
-Set `cv.n_splits: 1` and `cv.gap_days: 200` for the author's private-period experiment:
+Set `cv.n_splits: 1` and `cv.gap_days: 200` for the Grigoreva private-period experiment:
 fit through 1298, replay 1299–1498 as unscored warmup, and score 1499–1698. The gap is
 **observed streaming time**, so updates on newly released gap-day labels are allowed.
 It is not a 200-day embargo that discards the intervening market stream.
@@ -132,10 +174,12 @@ It is not a 200-day embargo that discards the intervening market stream.
 Offline fitting can use all labels in its declared historical partition. Auxiliary
 forward shifts are supervision, never inputs. Their required endpoints must stay within
 that partition; unavailable endpoint losses are masked. Fitted normalization means and
-standard deviations never use validation. No validation labels affect epoch selection:
-the configs use five fixed epochs as a reproducible research starting point, **not** the
-author's claimed best epoch count. Choose budgets in advance or use an additional inner
-temporal split before making generalization claims.
+standard deviations never use validation. Each training run uses a fixed epoch budget
+and does not automatically early-stop. Patrick's development studies use validation
+scores to compare candidate budgets and online settings; those dates therefore serve
+as development data. Five epochs is our current baseline, **not** a verified epoch
+count from Patrick's submission. Use a separate chronological evaluation before
+making generalization claims about selected settings.
 
 ## GRU reproduction
 
