@@ -52,8 +52,33 @@ durations, not guaranteed completion times.
 
 Run `epoch-study-20260920T185609Z` launched from commit `32f722d` after all 128
 local tests passed, all five deliberate leakage mutations were detected, and the
-archived runtime comparison passed. Completed study results are not yet available.
+archived runtime comparison passed. The controller and W&B run have now completed successfully.
 
 - [W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-study-20260920T185609Z-overview)
 - [Launch identity and durable call ID](references/patrick-epoch-study-launch.json)
 - [Modal app](https://modal.com/apps/cweill/main/deployed/patrick-epoch-study)
+
+
+## Completed results
+
+All six evaluations cover the same 7,457,472 scored rows on dates 1180–1379,
+with pooled target energy 10,547,832.643854462. Epoch-five results are reused from
+the original development study; epochs three and four were newly trained and replayed.
+
+| Offline epochs | Frozen R² | Online R² (LR 1e-4) | OL gain |
+| --- | ---: | ---: | ---: |
+| 3 | 0.01818019 | 0.02193983 | +0.00375964 |
+| 4 | 0.01893456 | 0.02308571 | +0.00415114 |
+| 5 | 0.01935094 | 0.02405157 | +0.00470063 |
+
+Five epochs performs best among the tested budgets, both frozen and online.
+Its online R² exceeds epoch four by 0.00096586 and epoch three by 0.00211174.
+The earlier individual-model validation plateau did not translate into better
+ensemble replay performance from stopping early. Keep five epochs as the working
+baseline; this one adaptively reused development window does not establish a
+universally optimal epoch budget.
+
+- [Full result with checkpoint identities](references/patrick-epoch-study-result.json)
+- [Rolling comparison](references/patrick-epoch-study-rolling.png)
+- [Rolling values](references/patrick-epoch-study-rolling.csv)
+- [Nonoverlapping scored blocks](references/patrick-epoch-study-blocks.csv)
