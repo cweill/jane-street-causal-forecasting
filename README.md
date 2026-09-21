@@ -31,6 +31,15 @@ Development models train on dates 0–1059 and replay unscored warmup 1060–117
 The 17-model ensemble trains on 0–1379 and replays unscored warmup 1380–1499.
 Scores from these different windows are not directly comparable.
 
+![Our 17-model reconstruction: best tested online learning at LR 1e-4 versus frozen, measured by rolling 20-day weighted zero-mean R²](docs/references/patrick-online-best-vs-frozen.png)
+
+Our reproduction of the online-versus-frozen comparison uses the same initial
+17-model ensemble for both curves. Online LR `1e-4` is the best tested setting for
+this ensemble. The curves show rolling 20-day weighted zero-mean R²; the dotted
+line marks scoring starting at date 1500 after unscored warmup. Over dates
+1500–1698, pooled R² is **0.01941540 online versus 0.01412888 frozen**.
+See the [full experiment record](docs/patrick-online-followup.md).
+
 The [completed epoch study](docs/patrick-epoch-study.md) favors five epochs among
 the three tested budgets. The [learning-rate refinement](docs/patrick-online-refinement.md)
 found `5e-5` narrowly ahead of `1e-4` on the development window (0.02406497 versus
