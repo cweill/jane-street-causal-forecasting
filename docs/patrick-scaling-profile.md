@@ -51,7 +51,7 @@ memory, and unchanged per-model updates. The current profile cannot establish ho
 much that would help. Improving one-model replay calls for an inference trace
 first, because timestamp processing is its larger cost.
 
-The full suite passed 109 tests and [CI passed](https://github.com/cweill/janestreet-repro/actions/runs/35407046190).
+The full suite passed 109 tests and [CI passed](https://github.com/cweill/jane-street-causal-forecasting/actions/runs/35407046190).
 The remote safety gate and local source fingerprint match. The compressed Chrome
 trace is saved on `janestreet-replay-acceleration` at
 `scaling-profiles/scaling-20260918T234742Z/online_update_trace.json.gz`.

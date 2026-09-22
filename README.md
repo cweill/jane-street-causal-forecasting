@@ -1,4 +1,4 @@
-# Jane Street 2025 forecasting research harness
+# Jane Street Causal Forecasting
 
 A leakage-safe research harness for reconstructing **Patrick Yam's second-place
 Jane Street Real-Time Market Data Forecasting method**. It implements training-only

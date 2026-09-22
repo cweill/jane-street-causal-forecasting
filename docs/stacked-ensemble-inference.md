@@ -91,7 +91,7 @@ original failed comparison and the controlled experiment identifying cuDNN TF32.
 The [complete benchmark record](references/patrick-stacked-ensemble-benchmark.json)
 includes the Modal call, implementation commit, matching local/remote source hash,
 and the 89-test remote safety gate. The full local suite passed all 108 tests;
-[CI passed](https://github.com/cweill/janestreet-repro/actions/runs/35403089331),
+[CI passed](https://github.com/cweill/jane-street-causal-forecasting/actions/runs/35403089331),
 including leakage mutation checks.
 
 The three-member online replay on dates 1380–1381 also passed: maximum prediction

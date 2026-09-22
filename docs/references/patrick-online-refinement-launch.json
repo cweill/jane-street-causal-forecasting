@@ -53,5 +53,5 @@
     "lr_3e-5_persistent": true,
     "lr_5e-5_persistent": true
   },
-  "ci_url": "https://github.com/cweill/janestreet-repro/actions/runs/35498107527"
+  "ci_url": "https://github.com/cweill/jane-street-causal-forecasting/actions/runs/35498107527"
 }

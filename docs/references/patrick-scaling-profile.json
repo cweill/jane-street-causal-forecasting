@@ -572,7 +572,7 @@
     "source_run": "20260918T200909Z-2b3a45f0"
   },
   "local_and_remote_code_match": true,
-  "ci_url": "https://github.com/cweill/janestreet-repro/actions/runs/35407046190",
+  "ci_url": "https://github.com/cweill/jane-street-causal-forecasting/actions/runs/35407046190",
   "full_local_suite": "109 passed in 8.66s",
   "warmed_day_comparison": [
     {
