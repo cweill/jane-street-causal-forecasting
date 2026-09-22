@@ -1,0 +1,23 @@
+{
+  "run_id": "long-epochs-20260922T184410Z",
+  "controller_call_id": "fc-01M356XGT51KWE2C3CSCMXZVKA",
+  "source_commit": "63757f150fed6dcd61dd7d938b575096a0a1b631",
+  "code_sha256": "a88a05290099c089315a5084861d49e490717ed86cb1eaabb05a58cee19b136c",
+  "app": "patrick-long-epochs",
+  "volume": "janestreet-patrick-long-epochs",
+  "config": "configs/patrick_long_epochs.yaml",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "captured_epochs": [
+    5,
+    7,
+    9
+  ],
+  "online_learning_rate": 0.0001,
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/long-epochs-20260922T184410Z-overview",
+  "local_tests_passed": 116,
+  "leakage_mutations_detected": 4
+}

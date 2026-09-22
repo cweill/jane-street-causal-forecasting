@@ -48,3 +48,14 @@ No GPU is requested until the CPU causal gate and preparation checks pass.
 Configuration: `configs/patrick_long_epochs.yaml`.
 Launcher: `scripts/modal_long_epochs.py`.
 The original control run is `ol-sweep-20260919T194601Z`.
+
+## Launch
+
+Started September 22, 2026, with source commit `63757f150fed6dcd61dd7d938b575096a0a1b631`.
+
+[W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/long-epochs-20260922T184410Z-overview) ·
+[Immutable launch record](references/patrick-long-epochs-launch.json).
+
+Local verification before launch: 116 tests passed and all four deliberate
+leakage mutations were detected. Results will be recorded after all controls
+and paired replays finish.
