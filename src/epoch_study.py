@@ -46,13 +46,20 @@ def check_history(actual, reference, atol=1e-7):
         raise ValueError("new training history differs from original deterministic prefix")
 
 
-def snapshot_epoch(saved, prepared, config, seed, directory):
+def snapshot_epoch(saved, prepared, config, seed, directory, *, capture_epochs=(3, 4)):
+    capture_epochs = tuple(capture_epochs)
+    if (
+        not capture_epochs
+        or any(type(e) is not int or e < 1 for e in capture_epochs)
+        or capture_epochs != tuple(sorted(set(capture_epochs)))
+        or max(capture_epochs) != config.training.epochs
+    ):
+        raise ValueError("epoch artifact identity mismatch")
     epoch = saved["epoch"]
-    if saved["position"] != 0 or epoch not in (3, 4):
+    if saved["position"] != 0 or epoch not in capture_epochs:
         return False
     if (
-        config.training.epochs != 4
-        or config.online.learning_rate != 1e-4
+        config.online.learning_rate != 1e-4
         or config.online.reset_daily_optimizer
         or saved["completed"] != epoch * len(prepared.dates)
         or len(saved["history"]) != epoch
@@ -180,7 +187,7 @@ def compare_epochs(roots, fold, directory, window=20):
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(11, 6), layout="constrained")
-    colors = {3: "#1f77b4", 4: "#ff7f0e", 5: "#2ca02c"}
+    colors = {epoch: f"C{i % 10}" for i, epoch in enumerate(sorted(roots))}
     for curve in curves:
         epoch = int(curve["epoch"][0])
         mode = curve["mode"][0]

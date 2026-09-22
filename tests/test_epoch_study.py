@@ -18,13 +18,18 @@ def api():
     return importlib.import_module("src.epoch_study")
 
 
-def test_epoch_snapshots_preserve_training_rng_and_recover_missing_observation(tmp_path):
+@pytest.mark.parametrize("captures", [(3, 4), (5, 7, 9)])
+def test_epoch_snapshots_preserve_training_rng_and_recover_missing_observation(tmp_path, captures):
     mod = api()
+    import inspect
+
+    assert "capture_epochs" in inspect.signature(mod.snapshot_epoch).parameters
+    budget = max(captures)
     c = tiny_config()
     c = replace(
         c,
         model=replace(c.model, dropout=0.2),
-        training=replace(c.training, epochs=4),
+        training=replace(c.training, epochs=budget),
         online=replace(c.online, learning_rate=1e-4),
     )
     source = FrameSource(panel())
@@ -41,9 +46,9 @@ def test_epoch_snapshots_preserve_training_rng_and_recover_missing_observation(t
         if not record["checkpoint_written"]:
             return
         saved = torch.load(checkpoint, map_location="cpu", weights_only=True)
-        if saved["epoch"] == 3 and saved["position"] == 0 and not snapshots.exists():
+        if saved["epoch"] == captures[0] and saved["position"] == 0 and not snapshots.exists():
             raise InterruptedError("after checkpoint, before epoch artifact")
-        mod.snapshot_epoch(saved, prepared, c, 0, snapshots)
+        mod.snapshot_epoch(saved, prepared, c, 0, snapshots, capture_epochs=captures)
 
     with pytest.raises(InterruptedError):
         train_model(
@@ -70,8 +75,9 @@ def test_epoch_snapshots_preserve_training_rng_and_recover_missing_observation(t
     b = torch.load(checkpoint, weights_only=True)
     for key in ("model", "optimizer", "torch_rng", "cuda_rng", "numpy_rng"):
         assert_tree_equal(a[key], b[key])
-    assert load_predictor(snapshots / "epoch_3/checkpoint").seeds == (0,)
-    saved = load_predictor(snapshots / "epoch_4/checkpoint")
+    for epoch in captures:
+        assert load_predictor(snapshots / f"epoch_{epoch}/checkpoint").seeds == (0,)
+    saved = load_predictor(snapshots / f"epoch_{budget}/checkpoint")
     assert_tree_equal(saved.models[0].state_dict(), model.state_dict())
     assert saved.config.learning_rate == 1e-4
     mod.check_history(history, history)
@@ -79,18 +85,23 @@ def test_epoch_snapshots_preserve_training_rng_and_recover_missing_observation(t
     _, longer_history = train_model(
         prepared,
         c.model,
-        training=replace(c.training, epochs=5),
+        training=replace(c.training, epochs=budget + 1),
         seed=0,
         validation=val,
     )
-    assert history == longer_history[:4]
+    assert history == longer_history[:budget]
     bad = [dict(h) for h in history]
     bad[0]["responder_6_r2"] += 0.01
     with pytest.raises(ValueError, match="history"):
         mod.check_history(history, bad)
     with pytest.raises(ValueError, match="identity"):
         mod.snapshot_epoch(
-            b, prepared, replace(c, online=replace(c.online, learning_rate=5e-4)), 0, snapshots
+            b,
+            prepared,
+            replace(c, online=replace(c.online, learning_rate=5e-4)),
+            0,
+            snapshots,
+            capture_epochs=captures,
         )
 
 
@@ -107,7 +118,7 @@ def test_epoch_comparison_pairs_within_epoch_and_rejects_mismatched_weights(tmp_
     prepared = prepare_training(source, (0, 1, 2), c.features, tmp_path / "train")
     fold = TemporalFold(0, (0, 1, 2), (3,), (4, 5, 6))
     roots = {}
-    for epoch in (3, 4, 5):
+    for epoch in (5, 7, 9):
         root = tmp_path / f"e{epoch}"
         root.mkdir()
         model, _ = train_model(
@@ -135,10 +146,10 @@ def test_epoch_comparison_pairs_within_epoch_and_rejects_mismatched_weights(tmp_
                 provenance={"dataset_sha256": "same"},
             )
     report = mod.compare_epochs(roots, fold, tmp_path / "report", window=2)
-    assert [r["epoch"] for r in report["epochs"]] == [3, 4, 5]
+    assert [r["epoch"] for r in report["epochs"]] == [5, 7, 9]
     assert all(r["online_r2"] - r["frozen_r2"] == r["delta_r2"] for r in report["epochs"])
     assert (tmp_path / "report/rolling_comparison.png").exists()
-    p = roots[3]["online"] / "result.json"
+    p = roots[5]["online"] / "result.json"
     d = json.loads(p.read_text())
     d["initial_weights_sha256"] = "different"
     write_json(p, d)

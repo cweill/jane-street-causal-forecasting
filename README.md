@@ -86,6 +86,8 @@ The [lower-rate refinement](docs/patrick-online-refinement.md) reuses those mode
 and baselines to evaluate four additional rates with scored time-block diagnostics.
 The [epoch-budget study](docs/patrick-epoch-study.md) compares epochs three, four and
 five with a fixed online learning rate, reusing the epoch-five results.
+The [longer-training study](docs/patrick-long-epochs.md) tests epochs five, seven,
+and nine with matched three-seed frozen/online replays and epoch-five control checks.
 
 ## Run locally
 
