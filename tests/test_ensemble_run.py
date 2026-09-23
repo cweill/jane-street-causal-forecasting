@@ -79,6 +79,10 @@ def test_assembly_requires_complete_distinct_seeds_and_identical_preprocessing(t
             },
         )
     assemble_ensemble(roots, cfg, tmp_path / "ensemble")
+    assemble_ensemble(roots[:1], cfg, tmp_path / "pilot", seeds=(0,))
+    assert load_predictor(tmp_path / "pilot").seeds == (0,)
+    with pytest.raises(ValueError, match="seed"):
+        assemble_ensemble(roots[:1], cfg, tmp_path / "bad_pilot", seeds=(2,))
     predictor = load_predictor(tmp_path / "ensemble")
     assert predictor.seeds == (0, 1) and predictor.stacked_inference
     with pytest.raises(ValueError, match="seed"):

@@ -88,9 +88,15 @@ def load_verified_cache(directory, source_archive, config, dates, dataset_sha256
     return PreparedPatrick(directory, tuple(dates), features)
 
 
-def assemble_ensemble(seed_directories, config, destination):
-    seeds = tuple(seed for _, seed in config.members)
-    if len(seed_directories) != len(seeds) or len(set(seeds)) != len(seeds):
+def assemble_ensemble(seed_directories, config, destination, *, seeds=None):
+    configured = tuple(seed for _, seed in config.members)
+    seeds = configured if seeds is None else tuple(seeds)
+    if (
+        not seeds
+        or not set(seeds).issubset(configured)
+        or len(seed_directories) != len(seeds)
+        or len(set(seeds)) != len(seeds)
+    ):
         raise ValueError("one completed artifact per distinct seed required")
     models, features = [], None
     for seed, directory in zip(seeds, seed_directories, strict=True):

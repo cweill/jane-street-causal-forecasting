@@ -92,6 +92,8 @@ The completed [longer-training study](docs/patrick-long-epochs.md) found the bes
 online score at nine epochs, with only a small lead over seven. The
 [earlier-split confirmation](docs/patrick-epoch-confirmation.md) compares seven
 and nine using fresh models and preprocessing fitted on dates 0–859.
+The [nine-epoch 17-model run](docs/patrick-nine-epoch-ensemble.md) follows these
+development comparisons, with a three-seed pilot before the remaining training jobs.
 
 ## Run locally
 

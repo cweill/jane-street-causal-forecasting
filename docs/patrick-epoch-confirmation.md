@@ -61,3 +61,15 @@ Started September 23, 2026 UTC (September 22 Pacific), with source commit
 
 Before launch, 117 local tests passed and all four deliberate leakage mutations
 were detected. The raw dataset remains in the read-only research volume.
+
+## Completed replay results
+
+| Epochs | Frozen R² | Online R² |
+|---|---:|---:|
+| 7 | 0.01364799 | 0.02634289 |
+| 9 | 0.01522683 | 0.02725828 |
+
+All four replay workers completed. Nine epochs improves online R² by
+0.0009153861 and wins all ten nonoverlapping scored 20-day blocks. Each candidate
+uses 7,174,816 scored rows and target energy 9,482,158.852753779. These completed
+replay artifacts motivate the [staged full ensemble run](patrick-nine-epoch-ensemble.md).
