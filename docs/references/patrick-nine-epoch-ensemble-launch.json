@@ -1,0 +1,57 @@
+{
+  "run_id": "nine-epoch-ensemble-20260923T200241Z",
+  "controller_call_id": "fc-01M37XSZQSXN21FVZM8Y3J255Y",
+  "source_commit": "85b3d2d14362a7962c2822ce6d877cb938b373d4",
+  "code_sha256": "578a1326924835b3d6e5f4abe05fa47d96a719f489e2d3fc7af10b92b4119466",
+  "app": "patrick-nine-epoch-ensemble",
+  "volume": "janestreet-patrick-nine-epoch-ensemble",
+  "config": "configs/patrick_nine_epoch_ensemble.yaml",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "offline_epochs": 9,
+  "pilot_seeds": [
+    0,
+    1,
+    2
+  ],
+  "pilot_dates": [
+    1380,
+    1384
+  ],
+  "train_dates": [
+    0,
+    1379
+  ],
+  "warmup_dates": [
+    1380,
+    1499
+  ],
+  "scored_dates": [
+    1500,
+    1698
+  ],
+  "online_learning_rate": 0.0001,
+  "max_training_gpus": 4,
+  "max_replay_gpus": 2,
+  "baseline_run": "ol-followup-20260920T070707Z",
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/nine-epoch-ensemble-20260923T200241Z-overview",
+  "local_tests_passed": 121,
+  "leakage_mutations_detected": 4
+}

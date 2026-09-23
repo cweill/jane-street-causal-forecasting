@@ -69,3 +69,14 @@ Allow approximately **12–16 hours** including the three-seed pilot training,
 remaining seeds in four-worker waves, and full 17-model online replay. Actual time
 depends on GPU availability and cache I/O. Peak requested concurrency is four L4s
 for training and two L4s for replay; these stages do not overlap.
+
+## Launch
+
+Started September 23, 2026, with source commit
+`85b3d2d14362a7962c2822ce6d877cb938b373d4`.
+
+[W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/nine-epoch-ensemble-20260923T200241Z-overview) ·
+[Launch record](references/patrick-nine-epoch-ensemble-launch.json).
+
+Before launch, 121 tests passed, all four deliberate leakage mutations were
+detected, and the full-history secret scan found no leaks.
