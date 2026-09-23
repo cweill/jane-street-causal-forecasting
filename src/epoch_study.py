@@ -22,6 +22,22 @@ def read(path):
     return json.loads(Path(path).read_text())
 
 
+def confirmation_fold(config, reference, dates):
+    """Hold the selected recipe fixed while moving to the earlier temporal split."""
+    from src.cv import configured_folds
+
+    expected = replace(
+        reference,
+        name="patrick_epoch_confirmation",
+        cv=replace(reference.cv, train_end=859, warmup_end=979, validation_end=1179),
+    )
+    if config != expected:
+        raise ValueError("confirmation allows only the declared date-boundary changes")
+    fold = configured_folds(dates, config.cv)[0]
+    validate_fold(fold)
+    return fold
+
+
 def check_history(actual, reference, atol=1e-7):
     """Compare the deterministic prefix, allowing only small floating-point differences."""
 

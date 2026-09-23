@@ -155,3 +155,32 @@ def test_epoch_comparison_pairs_within_epoch_and_rejects_mismatched_weights(tmp_
     write_json(p, d)
     with pytest.raises(ValueError, match="paired"):
         mod.compare_epochs(roots, fold, tmp_path / "bad", window=2)
+
+
+def test_confirmation_protocol_rejects_parameter_drift_and_missing_dates():
+    from src.config import load_config
+
+    mod = api()
+    assert hasattr(mod, "confirmation_fold"), "fixed confirmation protocol missing"
+    reference = load_config("configs/patrick_long_epochs.yaml")
+    config = replace(
+        reference,
+        name="patrick_epoch_confirmation",
+        cv=replace(reference.cv, train_end=859, warmup_end=979, validation_end=1179),
+    )
+    dates = tuple(range(1699))
+    fold = mod.confirmation_fold(config, reference, dates)
+    assert fold.train_dates == tuple(range(860))
+    assert fold.warmup_dates == tuple(range(860, 980))
+    assert fold.validation_dates == tuple(range(980, 1180))
+    for changed in (
+        replace(config, online=replace(config.online, learning_rate=5e-4)),
+        replace(config, training=replace(config.training, learning_rate=1e-4)),
+        replace(config, ensemble=replace(config.ensemble, seeds=(3, 4, 5))),
+        replace(config, cv=reference.cv),
+        replace(config, features=replace(config.features, time_epsilon=0.01)),
+    ):
+        with pytest.raises(ValueError, match="confirmation"):
+            mod.confirmation_fold(changed, reference, dates)
+    with pytest.raises(ValueError, match="missing"):
+        mod.confirmation_fold(config, reference, [d for d in dates if d != 979])

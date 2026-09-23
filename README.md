@@ -25,6 +25,8 @@ Completed experiments report pooled weighted zero-mean R²:
 | Development, 3 offline epochs | 3 | 1180–1379 | 0.01818019 | 0.02193983 |
 | Development, 4 offline epochs | 3 | 1180–1379 | 0.01893456 | 0.02308571 |
 | Development, 5 offline epochs | 3 | 1180–1379 | 0.01935094 | 0.02405157 |
+| Development, 7 offline epochs | 3 | 1180–1379 | 0.02040328 | 0.02546736 |
+| Development, 9 offline epochs | 3 | 1180–1379 | 0.01962301 | 0.02568815 |
 | Later follow-up, 5 offline epochs | 17 | 1500–1698 | 0.01412888 | 0.01941540 |
 
 Development models train on dates 0–1059 and replay unscored warmup 1060–1179.
@@ -86,8 +88,10 @@ The [lower-rate refinement](docs/patrick-online-refinement.md) reuses those mode
 and baselines to evaluate four additional rates with scored time-block diagnostics.
 The [epoch-budget study](docs/patrick-epoch-study.md) compares epochs three, four and
 five with a fixed online learning rate, reusing the epoch-five results.
-The [longer-training study](docs/patrick-long-epochs.md) tests epochs five, seven,
-and nine with matched three-seed frozen/online replays and epoch-five control checks.
+The completed [longer-training study](docs/patrick-long-epochs.md) found the best
+online score at nine epochs, with only a small lead over seven. The
+[earlier-split confirmation](docs/patrick-epoch-confirmation.md) compares seven
+and nine using fresh models and preprocessing fitted on dates 0–859.
 
 ## Run locally
 

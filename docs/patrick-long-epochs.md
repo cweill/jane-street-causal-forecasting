@@ -57,5 +57,19 @@ Started September 22, 2026, with source commit `63757f150fed6dcd61dd7d938b575096
 [Immutable launch record](references/patrick-long-epochs-launch.json).
 
 Local verification before launch: 116 tests passed and all four deliberate
-leakage mutations were detected. Results will be recorded after all controls
-and paired replays finish.
+leakage mutations were detected. All six replays finished and the epoch-five
+control verification passed.
+
+## Results
+
+| Epochs | Frozen R² | Online R² |
+|---|---:|---:|
+| 5 | 0.01935094 | 0.02405157 |
+| 7 | 0.02040328 | 0.02546736 |
+| 9 | 0.01962301 | 0.02568815 |
+
+All scores use the same 7,457,472 scored rows and target energy
+10,547,832.643854462. Seven improves on five online in all ten nonoverlapping
+20-day blocks. Nine beats seven in six blocks, with pooled gain 0.00022079.
+The next experiment is the [earlier-split confirmation](patrick-epoch-confirmation.md);
+these results do not automatically change the full ensemble's training recipe.
