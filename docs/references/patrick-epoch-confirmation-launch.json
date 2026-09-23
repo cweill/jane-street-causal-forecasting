@@ -1,0 +1,34 @@
+{
+  "run_id": "epoch-confirmation-20260923T065042Z",
+  "controller_call_id": "fc-01M36GFTNEB819HAN1T0DTSCPE",
+  "source_commit": "c657eecd071ec62bef85e7357c1e1505c68f7a1e",
+  "code_sha256": "cf9e29a2740cbc0a99ef792d14126be1a4df6dc3ad4e98082e4ec2b7afb85199",
+  "app": "patrick-epoch-confirmation",
+  "volume": "janestreet-patrick-epoch-confirmation",
+  "config": "configs/patrick_epoch_confirmation.yaml",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "captured_epochs": [
+    7,
+    9
+  ],
+  "online_learning_rate": 0.0001,
+  "train_dates": [
+    0,
+    859
+  ],
+  "warmup_dates": [
+    860,
+    979
+  ],
+  "scored_dates": [
+    980,
+    1179
+  ],
+  "wandb_url": "https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-confirmation-20260923T065042Z-overview",
+  "local_tests_passed": 117,
+  "leakage_mutations_detected": 4
+}

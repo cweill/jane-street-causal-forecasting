@@ -50,3 +50,14 @@ are committed every 25 days and at epoch boundaries; replay commits daily.
 Epoch exports preserve training RNG state and recover after interruption.
 W&B records train losses, epoch validation, date-aligned replay metrics, and final
 comparison charts. Allow roughly 3–5 hours including preparation and scheduling.
+
+## Launch
+
+Started September 23, 2026 UTC (September 22 Pacific), with source commit
+`c657eecd071ec62bef85e7357c1e1505c68f7a1e`.
+
+[W&B overview](https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-confirmation-20260923T065042Z-overview) ·
+[Launch record](references/patrick-epoch-confirmation-launch.json).
+
+Before launch, 117 local tests passed and all four deliberate leakage mutations
+were detected. The raw dataset remains in the read-only research volume.
