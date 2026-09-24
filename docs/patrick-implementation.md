@@ -41,7 +41,7 @@ temporal folds, output validation, and artifact writing use the common research 
 | Online learning rate | Historical plot configs use 0.0005; completed development and 17-model follow-up favor 0.0001 as the working baseline. Neither is source-verified. The earlier pilot used 0.0003. |
 | Online optimizer lifetime | New Adam for online learning, persistent across days by default; daily reset independently configurable |
 | Online target set | Same enabled responder targets/loss as offline; all nine released responders when auxiliary supervision is on |
-| Epoch count, seed count | One fixed epoch and one seed by default; not the author's final training budget |
+| Epoch count, seed count | CPU starter: one epoch/one seed. Current full experiment: nine fixed epochs/17 seeds (`patrick_nine_epoch_ensemble.yaml`); the author's final epoch budget is unverified |
 | Gradient clipping | Norm 1.0 for offline and online, configurable |
 | Missing symbol observations | Mask asset attention, hold temporal state while absent, initialize new symbols at zero; empty timestamps produce finite masked outputs |
 | Day boundaries | Reset recurrent state each day; discard prior-day cache after lag processing; no reuse of offline optimizer state |

@@ -1,0 +1,19 @@
+{
+  "five_frozen": 0.014128878395570421,
+  "five_online": 0.019415402177092034,
+  "frozen_delta": 0.0001976241292691583,
+  "nine_frozen": 0.01432650252483958,
+  "nine_online": 0.020776079720027707,
+  "note": "Previously inspected later-date evaluation; not an untouched holdout.",
+  "online_delta": 0.0013606775429356732,
+  "paired_verification": {
+    "denominator": 10495085.4227218,
+    "frozen_r2": 0.01432650252483958,
+    "initial_weights_sha256": "7051e7031313e0fe7cb0740b87c2b7471b7607c1d69a5a9ff604e3223959c862",
+    "online_r2": 0.020776079720027707,
+    "passed": true,
+    "scored_rows": 7397456,
+    "updates": 318
+  },
+  "status": "complete"
+}

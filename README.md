@@ -13,10 +13,12 @@ The [implementation decisions](docs/patrick-implementation.md) and
 
 ## Current Patrick results
 
-The working baseline is **five offline epochs and online LR `1e-4`**, with three
-daily Adam steps, betas `(0.8, 0.95)`, persistent online optimizer state, and all nine
-responder targets. Offline training LR remains `5e-4`. Online updates use only
-previous-day labels after their API release.
+The current best tested configuration is **nine offline epochs, 17 seeds, and
+online LR `1e-4`**. It uses three daily Adam steps, betas `(0.8, 0.95)`, persistent
+online optimizer state, and all nine responder targets. Offline training LR is
+`5e-4`. Online updates use only previous-day labels after their API release.
+The [completed nine-epoch run](docs/patrick-nine-epoch-ensemble.md) achieved
+**0.02077608 online R²**, up from **0.01941540** at five epochs.
 
 Completed experiments report pooled weighted zero-mean R²:
 
@@ -27,39 +29,50 @@ Completed experiments report pooled weighted zero-mean R²:
 | Development, 5 offline epochs | 3 | 1180–1379 | 0.01935094 | 0.02405157 |
 | Development, 7 offline epochs | 3 | 1180–1379 | 0.02040328 | 0.02546736 |
 | Development, 9 offline epochs | 3 | 1180–1379 | 0.01962301 | 0.02568815 |
+| Earlier confirmation, 7 offline epochs | 3 | 980–1179 | 0.01364799 | 0.02634289 |
+| Earlier confirmation, 9 offline epochs | 3 | 980–1179 | 0.01522683 | 0.02725828 |
 | Later follow-up, 5 offline epochs | 17 | 1500–1698 | 0.01412888 | 0.01941540 |
+| Later follow-up, 9 offline epochs | 17 | 1500–1698 | **0.01432650** | **0.02077608** |
 
 Development models train on dates 0–1059 and replay unscored warmup 1060–1179.
-The 17-model ensemble trains on 0–1379 and replays unscored warmup 1380–1499.
-Scores from these different windows are not directly comparable.
+Earlier-confirmation models train on 0–859 and warm up on 860–979.
+Both 17-model ensembles train on 0–1379 and replay unscored warmup 1380–1499.
+Scores from different windows are not directly comparable.
 
-![Our 17-model reconstruction: best tested online learning at LR 1e-4 versus frozen, measured by rolling 20-day weighted zero-mean R²](docs/references/patrick-online-best-vs-frozen.png)
+![Nine-epoch 17-model ensemble: online learning at LR 1e-4 versus frozen, rolling 20-day weighted zero-mean R²](docs/references/patrick-nine-epoch-best-vs-frozen.png)
 
-Our reproduction of the online-versus-frozen comparison uses the same initial
-17-model ensemble for both curves. Online LR `1e-4` is the best tested setting for
-this ensemble. The curves show rolling 20-day weighted zero-mean R²; the dotted
-line marks scoring starting at date 1500 after unscored warmup. Over dates
-1500–1698, pooled R² is **0.01941540 online versus 0.01412888 frozen**.
-See the [full experiment record](docs/patrick-online-followup.md).
+Both curves start from the same nine-epoch ensemble. They show rolling 20-day
+weighted zero-mean R²; the dotted line marks scoring starting at date 1500.
+Over dates 1500–1698, online learning adds **0.00644958** R² over frozen.
+Compared with the five-epoch online ensemble, nine epochs adds **0.00136068**
+and improves all ten nonoverlapping scored blocks (nine 20-day blocks and one
+19-day block). Paired verification passed on all **7,397,456 scored rows**.
+The [runbook](docs/patrick-nine-epoch-ensemble.md) includes the four-curve comparison,
+[exact results](docs/references/patrick-nine-epoch-ensemble-results.json), and
+[block scores](docs/references/patrick-nine-epoch-ensemble-scored-blocks.csv).
 
-The [completed epoch study](docs/patrick-epoch-study.md) favors five epochs among
-the three tested budgets. The [learning-rate refinement](docs/patrick-online-refinement.md)
-found `5e-5` narrowly ahead of `1e-4` on the development window (0.02406497 versus
-0.02405157); this does not establish a precise optimum. Only `1e-4` has the
-[completed 17-model follow-up](docs/patrick-online-followup.md), where it improves
-R² over frozen by 0.00528652. These windows have been inspected during development;
-they are not untouched test sets, and Patrick's exact published scores are not reproduced.
+The initial [3/4/5-epoch study](docs/patrick-epoch-study.md) favored five epochs;
+the [longer-training study](docs/patrick-long-epochs.md) and
+[earlier-split confirmation](docs/patrick-epoch-confirmation.md) then favored nine.
+The [learning-rate refinement](docs/patrick-online-refinement.md) found `5e-5`
+narrowly ahead of `1e-4` on the five-epoch development window (0.02406497 versus
+0.02405157), so the learning-rate optimum is not established. We retained `1e-4`
+for the nine-epoch comparison to isolate the training-budget change.
 
-Historical configs retain their original settings: for example,
-`configs/patrick_ensemble.yaml` still has online LR `5e-4`. The follow-up launcher
-overrides that value to `1e-4`; it does not retrain the ensemble. The epoch-study
-config trains through epoch four to capture epochs three and four and reuses the
-original epoch-five results. Use each linked runbook and recorded launch identity
-to reproduce that experiment rather than treating every config as the current baseline.
+Our later-window score is numerically above Patrick's reported 0.02059, but the
+exact reproduction details remain unconfirmed. These windows have been inspected
+during development and are **not untouched test sets**. This result does not
+establish leaderboard equivalence or a statistically significant advantage.
 
-The completed [W&B epoch comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/epoch-study-20260920T185609Z-overview)
-and [17-model OL comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z)
-contain the scores and rolling charts.
+Use `configs/patrick_nine_epoch_ensemble.yaml` and its
+[runbook](docs/patrick-nine-epoch-ensemble.md) for the current full experiment.
+Historical configs retain their original settings: `configs/patrick_ensemble.yaml`
+uses five epochs and online LR `5e-4`, and its follow-up launcher overrides that
+rate to `1e-4`. `configs/patrick.yaml` remains a small CPU starter. Recorded launch
+identities pin the source and settings for reproducing each experiment.
+
+[Latest W&B results and comparison chart](https://wandb.ai/cweill-self/janestreet-repro/runs/nine-epoch-ensemble-20260923T200241Z-overview) ·
+[Historical five-epoch OL comparison](https://wandb.ai/cweill-self/janestreet-repro/runs/ol-followup-20260920T070707Z).
 
 ## Workflows and implementation
 
@@ -92,8 +105,9 @@ The completed [longer-training study](docs/patrick-long-epochs.md) found the bes
 online score at nine epochs, with only a small lead over seven. The
 [earlier-split confirmation](docs/patrick-epoch-confirmation.md) compares seven
 and nine using fresh models and preprocessing fitted on dates 0–859.
-The [nine-epoch 17-model run](docs/patrick-nine-epoch-ensemble.md) follows these
-development comparisons, with a three-seed pilot before the remaining training jobs.
+The completed [nine-epoch 17-model run](docs/patrick-nine-epoch-ensemble.md) followed
+these development comparisons, passing the three-seed pilot, all epoch-five
+weight controls, and the final matched frozen/online evaluation.
 
 ## Run locally
 
@@ -184,8 +198,8 @@ training data ends at 1698; the later scored interval contains 199 dates.
 All nine responder targets are supervision, never model inputs. Fitted normalization
 and category vocabularies use only offline training dates. Every run uses a fixed
 epoch budget without automatic early stopping. Development validation informs later
-hyperparameter choices; it is not an untouched holdout. Five epochs is our working
-baseline, not a verified epoch count from Patrick's submission.
+hyperparameter choices; it is not an untouched holdout. Nine epochs is our current
+best tested budget, not a verified epoch count from Patrick's submission.
 
 ## Model and features
 
